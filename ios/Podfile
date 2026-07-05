@@ -30,10 +30,6 @@ target 'DrugsFront' do
   # Если автолинковка не сработала, раскомментируйте:
   # pod 'RNNotifee', :path => '../node_modules/@notifee/react-native'
 
-  target 'DrugsFrontTests' do
-    inherit! :complete
-  end
-
   post_install do |installer|
     react_native_post_install(
       installer,
