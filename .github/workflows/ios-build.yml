@@ -1,0 +1,83 @@
+name: iOS Build Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-ios:
+    name: Build iOS (Xcode)
+    runs-on: macos-15          # macOS 15 Sequoia — последний стабильный раннер с Xcode 16
+
+    steps:
+      # ── 1. Получаем код ───────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Node.js ────────────────────────────────────────────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # ── 3. Кешируем node_modules ──────────────────────────────────────────
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # ── 4. Устанавливаем JS-зависимости ───────────────────────────────────
+      - name: Install JS dependencies
+        run: npm install
+
+      # ── 5. Кешируем CocoaPods ─────────────────────────────────────────────
+      - name: Cache CocoaPods
+        uses: actions/cache@v4
+        id: pods-cache
+        with:
+          path: ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      # ── 6. Устанавливаем CocoaPods-зависимости ────────────────────────────
+      - name: Install CocoaPods
+        if: steps.pods-cache.outputs.cache-hit != 'true'
+        run: |
+          cd ios
+          pod install --repo-update
+
+      # ── 7. TypeScript-проверка ────────────────────────────────────────────
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      # ── 8. Сборка через xcodebuild ────────────────────────────────────────
+      #    CODE_SIGNING_ALLOWED=NO — сборка без Apple-сертификата (только проверка компиляции)
+      - name: Build iOS (no signing)
+        run: |
+          xcodebuild \
+            -workspace ios/DrugsFront.xcworkspace \
+            -scheme DrugsFront \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            | xcpretty --color || exit ${PIPESTATUS[0]}
+
+      # ── 9. Итоговый статус ────────────────────────────────────────────────
+      - name: Build summary
+        if: always()
+        run: |
+          echo "## iOS Build Result" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Сборка прошла успешно" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Сборка упала — смотри логи выше" >> $GITHUB_STEP_SUMMARY
+          fi
