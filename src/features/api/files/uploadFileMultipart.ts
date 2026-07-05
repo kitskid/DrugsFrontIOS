@@ -31,7 +31,7 @@ type UploadFields = {
 type UploadProgressHandler = (progress: number) => void;
 
 const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
-  const binary = global.atob(base64);
+  const binary = globalThis.atob(base64);
   const bytes = new Uint8Array(binary.length);
 
   for (let index = 0; index < binary.length; index++) {
