@@ -1,0 +1,71 @@
+{
+  "screenTitles": {
+    "documents": "Documents",
+    "fileProperties": "File properties",
+    "search": "Search"
+  },
+  "sections": {
+    "folders": "Folders",
+    "files": "Files"
+  },
+  "folder": {
+    "storage": "Storage",
+    "empty": "Empty",
+    "noSubtitle": "—"
+  },
+  "storage": {
+    "usedLabel": "Used",
+    "increaseButton": "Increase storage",
+    "searchKeyword": "storage",
+    "fileCount_one": "{{count}} file",
+    "fileCount_other": "{{count}} files",
+    "folderCount_one": "{{count}} folder",
+    "folderCount_other": "{{count}} folders",
+    "fileSizeUnits": {
+      "bytes": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  },
+  "folderScreen": {
+    "empty": "No files here yet"
+  },
+  "searchScreen": {
+    "emptyTitle": "No files or folders",
+    "emptySubtitle": "Try changing your query or upload a file",
+    "placeholder": "Search"
+  },
+  "fileScreen": {
+    "fileNameLabel": "File name",
+    "location": "Location",
+    "download": "Download",
+    "metadata": {
+      "type": "Type",
+      "size": "Size",
+      "uploadDate": "Upload date"
+    }
+  },
+  "modals": {
+    "deleteFile": {
+      "title": "Delete file?",
+      "no": "No",
+      "yes": "Yes, delete"
+    },
+    "fileName": {
+      "title": "File name",
+      "back": "Back",
+      "save": "Save"
+    },
+    "location": {
+      "title": "Location",
+      "searchPlaceholder": "Search",
+      "select": "Select"
+    }
+  },
+  "toasts": {
+    "fileDownloadSuccess": "File «{{fileName}}» saved to «{{locationLabel}}»",
+    "fileDownloadError": "Failed to download file",
+    "fileUploadError": "Failed to upload file"
+  }
+}

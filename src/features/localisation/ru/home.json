@@ -1,0 +1,33 @@
+{
+  "activeDrugs": {
+    "title": "Активные лекарства",
+    "goToList": "К списку лекарств",
+    "dosesRemainingLabel": "Сегодня ещё\nприёмов",
+    "courseRemainingLabel": "До конца\nкурса",
+    "daysShort": "{{count}} дн"
+  },
+  "upcomingEvents": {
+    "title": "Ближайшие события",
+    "goToCalendar": "В календарь"
+  },
+  "eventsCalendar": {
+    "noEvents": "Нет событий",
+    "invalidDatePlaceholder": "—"
+  },
+  "notifications": {
+    "timeToTake": "Пора принять",
+    "inMinutes_one": "Через {{count}} минуту",
+    "inMinutes_few": "Через {{count}} минуты",
+    "inMinutes_many": "Через {{count}} минут",
+    "inHours_one": "Через {{count}} час",
+    "inHours_few": "Через {{count}} часа",
+    "inHours_many": "Через {{count}} часов",
+    "inHoursMinutes": "Через {{hours}} {{hoursWord}} {{minutes}} {{minutesWord}}",
+    "hoursUnit_one": "час",
+    "hoursUnit_few": "часа",
+    "hoursUnit_many": "часов",
+    "minutesUnit_one": "минуту",
+    "minutesUnit_few": "минуты",
+    "minutesUnit_many": "минут"
+  }
+}

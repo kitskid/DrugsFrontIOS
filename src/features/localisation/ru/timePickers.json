@@ -1,0 +1,61 @@
+{
+  "common": {
+    "back": "Вернуться",
+    "save": "Сохранить"
+  },
+  "defaults": {
+    "dateTitle": "Дата",
+    "timeTitle": "Время",
+    "everyTitle": "Каждые",
+    "datePlaceholder": "Выберите дату",
+    "timePlaceholder": "Выберите время",
+    "intervalPlaceholder": "Выберите интервал",
+    "everyPrefix": "Каждые"
+  },
+  "units": {
+    "dayShort": "дн",
+    "hourShort": "ч",
+    "minuteShort": "мин"
+  },
+  "notify": {
+    "modalTitle": "Напомнить за",
+    "units": {
+      "minute": "мин",
+      "hour": "ч",
+      "day": "дн"
+    }
+  },
+  "months": {
+    "jan": "янв",
+    "feb": "фев",
+    "mar": "мар",
+    "apr": "апр",
+    "may": "май",
+    "jun": "июн",
+    "jul": "июл",
+    "aug": "авг",
+    "sep": "сен",
+    "oct": "окт",
+    "nov": "ноя",
+    "dec": "дек"
+  },
+  "monthsGenitive": {
+    "jan": "января",
+    "feb": "февраля",
+    "mar": "марта",
+    "apr": "апреля",
+    "may": "мая",
+    "jun": "июня",
+    "jul": "июля",
+    "aug": "августа",
+    "sep": "сентября",
+    "oct": "октября",
+    "nov": "ноября",
+    "dec": "декабря"
+  },
+  "hours": {
+    "one": "час",
+    "few": "часа",
+    "many": "часов"
+  }
+}

@@ -1,0 +1,274 @@
+{
+  "drugsScreen": {
+    "searchPlaceholder": "Search medications",
+    "emptyText": "No medications yet"
+  },
+  "tabs": {
+    "generalInfo": "General info",
+    "intakes": "Intakes",
+    "files": "Files"
+  },
+  "filesTab": {
+    "empty": "No files yet",
+    "uploadError": "Upload error",
+    "fileSizeUnits": {
+      "bytes": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    },
+    "addFileModal": {
+      "title": "Add file",
+      "takePhoto": "Take photo",
+      "openGallery": "Open gallery",
+      "uploadFromStorage": "Upload from storage",
+      "defaultFileName": "File",
+      "cloudFileError": "Could not get the file from the cloud. Open Google Drive, make the file available offline, and try again.",
+      "storagePickError": "Failed to upload file from storage"
+    }
+  },
+  "intakesTab": {
+    "eventsCount_one": "{{count}} event",
+    "eventsCount_other": "{{count}} events",
+    "loadError": "Failed to load calendar"
+  },
+  "screenTitles": {
+    "profile": "Drug profile",
+    "formDosage": "Form and dosage",
+    "regimen": "Regimen",
+    "notify": "Reminder settings",
+    "periodicity": "Periodicity"
+  },
+  "periodicity": {
+    "scheduleLabel": "Schedule",
+    "weekDaysLabel": "Week days",
+    "datePickerTitle": "Intake date",
+    "emptyDatesWarning": "Add at least one date",
+    "saveButton": "Save periodicity",
+    "scheduleTypes": {
+      "interval": "Interval",
+      "weekDays": "By week days",
+      "dates": "Dates"
+    }
+  },
+  "meals": {
+    "emptyTitle": "Meals not specified",
+    "specifyButton": "Specify",
+    "periodicityTitle": "Periodicity",
+    "mealReminderLabel": "Remind about meals",
+    "editMealsButton": "Edit my meals",
+    "whenToTakeLabel": "When to take medication",
+    "intakeMomentLabel": "Medication intake moment",
+    "foodRelation": {
+      "before": "Before meal",
+      "during": "During meal",
+      "after": "After meal"
+    },
+    "offsetLabel": {
+      "before": "Before",
+      "after": "After"
+    },
+    "offsetPresets": {
+      "5m": "5 min",
+      "15m": "15 min",
+      "30m": "30 min",
+      "1h": "1 hour",
+      "2h": "2 hours",
+      "custom": "Custom"
+    },
+    "periodicityLabel": {
+      "everyDay": "Every day",
+      "everyNDays_one": "Every {{count}} day",
+      "everyNDays_other": "Every {{count}} days",
+      "individualDates": "Individual dates"
+    }
+  },
+  "infoTab": {
+    "drugNamePlaceholder": "Drug name",
+    "formDosageTitle": "Form and dosage",
+    "formDosagePlaceholder": "Release form, dosage, unit",
+    "formDosageInfoMessage": "Fill in the form and dosage to track medicines in your medicine cabinet",
+    "noteTitle": "Note",
+    "notePlaceholder": "For example, on an empty stomach or before sleep",
+    "regimenTitle": "Regimen",
+    "regimenPlaceholder": "Not selected",
+    "regimenWarningMessage": "Set up a regimen to receive reminders",
+    "reminderTitle": "Reminder",
+    "notifyParamsTitle": "Reminder settings",
+    "notifyParamsPlaceholder": "Not selected"
+  },
+  "toasts": {
+    "drugNameRequiredForSave": "Drug name is required to save",
+    "formDosageRequiredForSave": "Fill in the form and dosage",
+    "regimenRequiredForSave": "Set up a regimen",
+    "individualRegimenNotSupported": "Individual regimens with multiple days are not supported yet",
+    "saveSuccess": "Drug saved",
+    "updateSuccess": "Changes saved",
+    "deleteSuccess": "Drug deleted",
+    "deleteServerError": "Failed to delete drug",
+    "saveServerError": "Failed to save drug",
+    "loadError": "Failed to load drug",
+    "fileUploadError": "Failed to upload file",
+    "fileDeleteError": "Failed to delete file",
+    "fileDownloadError": "Failed to download file",
+    "fileDownloadSuccess": "File «{{fileName}}» saved to «{{locationLabel}}»"
+  },
+  "modals": {
+    "requiredError": "Field is required to save",
+    "deleteModal": {
+      "title": "Are you sure you want to delete this medication?",
+      "no": "No",
+      "yes": "Yes, delete"
+    },
+    "name": {
+      "title": "Drug name",
+      "placeholder": "Enter name"
+    },
+    "note": {
+      "title": "Note",
+      "placeholder": "For example, on an empty stomach or before sleep"
+    },
+    "back": "Back",
+    "save": "Save"
+  },
+  "formDosage": {
+    "releaseFormLabel": "Release form",
+    "releaseFormPlaceholder": "For example tablets or capsules",
+    "dosageAmountLabel": "Dosage / Amount",
+    "dosageAmountPlaceholder": "Number",
+    "dosageUnitLabel": "Unit",
+    "dosageUnitPlaceholder": "For example mg, ml, pcs",
+    "saveButton": "Save form and dosage",
+    "requiredError": "Field is required to save",
+    "releaseFormOptions": {
+      "capsules": "Capsules",
+      "pills": "Pills",
+      "dragee": "Dragee",
+      "tablets": "Tablets",
+      "granules": "Granules",
+      "powder": "Powder",
+      "lozenges": "Lozenges"
+    },
+    "dosageUnitOptions": {
+      "mg": "mg",
+      "g": "g",
+      "ml": "ml",
+      "l": "l",
+      "drops": "drops",
+      "pcs": "pcs",
+      "iu": "IU"
+    }
+  },
+  "regimen": {
+    "saveButton": "Save regimen",
+    "typeLabel": "Regimen type",
+    "typePlaceholder": "Times per day",
+    "dateStartLabel": "Start date",
+    "timeStartLabel": "Start time",
+    "daysCountLabel": "Days count",
+    "types": {
+      "dailyAtTime": "Daily at specific time",
+      "everyNHours": "Every N hours",
+      "weekDays": "By week days",
+      "everyNDays": "Every N days",
+      "individual": "Individual",
+      "meals": "Linked to meal times"
+    }
+  },
+  "regimenTypes": {
+    "warningAddOneTime": "Add at least one intake time",
+    "warningAddOneWeekDay": "Add at least one week day",
+    "warningAddOneIndividualDay": "Add at least one intake day",
+    "warningDuplicateIndividualDay": "This day has already been added",
+    "dailyPlanTitle": "Intake plan",
+    "timeStartModalTitle": "Start time",
+    "everyHour": {
+      "intervalTitle": "Interval every",
+      "pauseTitle": "Intake pause",
+      "fromLabel": "From",
+      "toLabel": "To",
+      "fromModalTitle": "Do not disturb from",
+      "toModalTitle": "Do not disturb to",
+      "everyLabel": "Every",
+      "presets": {
+        "2": "2 hours",
+        "4": "4 hours",
+        "6": "6 hours",
+        "8": "8 hours",
+        "12": "12 hours",
+        "custom": "Custom"
+      }
+    },
+    "everyDay": {
+      "unitShort": "d"
+    },
+    "weekDays": {
+      "mondayShort": "Mo",
+      "tuesdayShort": "Tu",
+      "wednesdayShort": "We",
+      "thursdayShort": "Th",
+      "fridayShort": "Fr",
+      "saturdayShort": "Sa",
+      "sundayShort": "Su",
+      "mondayTitle": "Monday",
+      "tuesdayTitle": "Tuesday",
+      "wednesdayTitle": "Wednesday",
+      "thursdayTitle": "Thursday",
+      "fridayTitle": "Friday",
+      "saturdayTitle": "Saturday",
+      "sundayTitle": "Sunday",
+      "applyToAll": "Apply to all days"
+    }
+  },
+  "notifications": {
+    "presetsTitle": "Remind about intake before",
+    "customOffsetLabel": "Remind before",
+    "doNotDisturbTitle": "Do not disturb",
+    "fromLabel": "From",
+    "toLabel": "To",
+    "fromModalTitle": "Do not disturb from",
+    "toModalTitle": "Do not disturb to",
+    "saveButton": "Save reminders",
+    "presets": {
+      "5m": "5 min",
+      "15m": "15 min",
+      "30m": "30 min",
+      "1h": "1 hour",
+      "1d": "1 day",
+      "custom": "Custom"
+    },
+    "customOffsetOptions": {
+      "30m": "30 min",
+      "1h": "1 hour",
+      "2h": "2 h",
+      "3h": "3 h",
+      "6h": "6 h",
+      "12h": "12 h",
+      "1d": "1 day",
+      "2d": "2 days"
+    },
+    "summary": {
+      "atIntakeOnly": "Only at intake time",
+      "5m": "5 minutes before",
+      "15m": "15 minutes before",
+      "30m": "30 minutes before",
+      "1h": "1 hour before",
+      "1d": "1 day before",
+      "customPrefix": "before",
+      "customUnits": {
+        "minute": {
+          "one": "minute",
+          "many": "minutes"
+        },
+        "hour": {
+          "one": "hour",
+          "many": "hours"
+        },
+        "day": {
+          "one": "day",
+          "many": "days"
+        }
+      }
+    }
+  }
+}

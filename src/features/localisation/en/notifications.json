@@ -1,0 +1,25 @@
+{
+  "screen": {
+    "title": "Notifications",
+    "sections": {
+      "new": "New",
+      "read": "Read"
+    },
+    "markAllRead": "Mark all as read ({{count}})",
+    "empty": "No notifications yet"
+  },
+  "types": {
+    "MEDICATION_REMINDER": "Medication intake",
+    "APPOINTMENT_REMINDER": "Doctor appointment",
+    "REMINDER_UPDATED": "Reminder updated",
+    "REMINDER_DELETED": "Reminder deleted"
+  },
+  "defaults": {
+    "notification": "Notification"
+  },
+  "relativeTime": {
+    "justNow": "just now",
+    "inMinutes": "in {{count}} min.",
+    "minutesAgo": "{{count}} min. ago"
+  }
+}

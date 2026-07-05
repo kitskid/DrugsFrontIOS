@@ -1,0 +1,61 @@
+{
+  "title": "Calendar",
+  "changeLanguageButton": "Switch to Russian",
+  "monthChooseScreenTitle": "Month selection",
+  "yearChooseScreenTitle": "Year selection",
+  "months": {
+    "jan": "January",
+    "feb": "February",
+    "mar": "March",
+    "apr": "April",
+    "may": "May",
+    "jun": "June",
+    "jul": "July",
+    "aug": "August",
+    "sep": "September",
+    "oct": "October",
+    "nov": "November",
+    "dec": "December"
+  },
+  "monthsGenitive": {
+    "jan": "January",
+    "feb": "February",
+    "mar": "March",
+    "apr": "April",
+    "may": "May",
+    "jun": "June",
+    "jul": "July",
+    "aug": "August",
+    "sep": "September",
+    "oct": "October",
+    "nov": "November",
+    "dec": "December"
+  },
+  "weekdays": {
+    "mon": "Mon",
+    "tue": "Tue",
+    "wed": "Wed",
+    "thu": "Thu",
+    "fri": "Fri",
+    "sat": "Sat",
+    "sun": "Sun"
+  },
+  "intakeStatus": {
+    "scheduled": "Scheduled",
+    "completed": "Taken",
+    "missed": "Missed"
+  },
+  "statusChangeModal": {
+    "title": "Status",
+    "openProfile": "Open drug profile",
+    "done": "Done"
+  },
+  "eventsCount_one": "{{count}} event",
+  "eventsCount_other": "{{count}} events",
+  "loadError": "Failed to load calendar",
+  "cardLoadError": "Failed to load",
+  "emptyState": {
+    "title": "No medication intakes",
+    "subtitle": "Select other dates or add intakes"
+  }
+}

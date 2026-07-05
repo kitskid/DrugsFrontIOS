@@ -1,0 +1,73 @@
+{
+  "screenTitles": {
+    "documents": "Документы",
+    "fileProperties": "Свойства файла",
+    "search": "Поиск"
+  },
+  "sections": {
+    "folders": "Папки",
+    "files": "Файлы"
+  },
+  "folder": {
+    "storage": "Хранилище",
+    "empty": "Пусто",
+    "noSubtitle": "—"
+  },
+  "storage": {
+    "usedLabel": "Занято",
+    "increaseButton": "Увеличить хранилище",
+    "searchKeyword": "хранилище",
+    "fileCount_one": "{{count}} файл",
+    "fileCount_few": "{{count}} файла",
+    "fileCount_many": "{{count}} файлов",
+    "folderCount_one": "{{count}} папка",
+    "folderCount_few": "{{count}} папки",
+    "folderCount_many": "{{count}} папок",
+    "fileSizeUnits": {
+      "bytes": "Б",
+      "kb": "КБ",
+      "mb": "МБ",
+      "gb": "ГБ"
+    }
+  },
+  "folderScreen": {
+    "empty": "Здесь пока нет файлов"
+  },
+  "searchScreen": {
+    "emptyTitle": "Нет файлов и папок",
+    "emptySubtitle": "Попробуйте изменить запрос или загрузите файл",
+    "placeholder": "Поиск"
+  },
+  "fileScreen": {
+    "fileNameLabel": "Название файла",
+    "location": "Расположение",
+    "download": "Скачать",
+    "metadata": {
+      "type": "Тип",
+      "size": "Вес",
+      "uploadDate": "Дата загрузки"
+    }
+  },
+  "modals": {
+    "deleteFile": {
+      "title": "Удалить файл?",
+      "no": "Нет",
+      "yes": "Да, удалить"
+    },
+    "fileName": {
+      "title": "Название файла",
+      "back": "Вернуться",
+      "save": "Сохранить"
+    },
+    "location": {
+      "title": "Расположение",
+      "searchPlaceholder": "Поиск",
+      "select": "Выбрать"
+    }
+  },
+  "toasts": {
+    "fileDownloadSuccess": "Файл «{{fileName}}» сохранён в «{{locationLabel}}»",
+    "fileDownloadError": "Не удалось скачать файл",
+    "fileUploadError": "Не удалось загрузить файл"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "activeDrugs": {
+    "title": "Active medications",
+    "goToList": "Go to medications list",
+    "dosesRemainingLabel": "More intakes\ntoday",
+    "courseRemainingLabel": "Until end\nof course",
+    "daysShort": "{{count}} d"
+  },
+  "upcomingEvents": {
+    "title": "Upcoming events",
+    "goToCalendar": "Go to calendar"
+  },
+  "eventsCalendar": {
+    "noEvents": "No events",
+    "invalidDatePlaceholder": "—"
+  },
+  "notifications": {
+    "timeToTake": "Time to take",
+    "inMinutes_one": "In {{count}} minute",
+    "inMinutes_other": "In {{count}} minutes",
+    "inHours_one": "In {{count}} hour",
+    "inHours_other": "In {{count}} hours",
+    "inHoursMinutes": "In {{hours}} {{hoursWord}} {{minutes}} {{minutesWord}}",
+    "hoursUnit_one": "hour",
+    "hoursUnit_other": "hours",
+    "minutesUnit_one": "minute",
+    "minutesUnit_other": "minutes"
+  }
+}

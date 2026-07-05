@@ -1,0 +1,61 @@
+{
+  "common": {
+    "back": "Back",
+    "save": "Save"
+  },
+  "defaults": {
+    "dateTitle": "Date",
+    "timeTitle": "Time",
+    "everyTitle": "Every",
+    "datePlaceholder": "Select date",
+    "timePlaceholder": "Select time",
+    "intervalPlaceholder": "Select interval",
+    "everyPrefix": "Every"
+  },
+  "units": {
+    "dayShort": "d",
+    "hourShort": "h",
+    "minuteShort": "min"
+  },
+  "notify": {
+    "modalTitle": "Remind before",
+    "units": {
+      "minute": "min",
+      "hour": "h",
+      "day": "d"
+    }
+  },
+  "months": {
+    "jan": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aug",
+    "sep": "Sep",
+    "oct": "Oct",
+    "nov": "Nov",
+    "dec": "Dec"
+  },
+  "monthsGenitive": {
+    "jan": "January",
+    "feb": "February",
+    "mar": "March",
+    "apr": "April",
+    "may": "May",
+    "jun": "June",
+    "jul": "July",
+    "aug": "August",
+    "sep": "September",
+    "oct": "October",
+    "nov": "November",
+    "dec": "December"
+  },
+  "hours": {
+    "one": "hour",
+    "few": "hours",
+    "many": "hours"
+  }
+}

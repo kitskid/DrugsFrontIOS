@@ -1,0 +1,25 @@
+{
+  "screen": {
+    "title": "Уведомления",
+    "sections": {
+      "new": "Новые",
+      "read": "Прочитанные"
+    },
+    "markAllRead": "Отметить всё прочитанным ({{count}})",
+    "empty": "Здесь пока нет уведомлений"
+  },
+  "types": {
+    "MEDICATION_REMINDER": "Приём лекарства",
+    "APPOINTMENT_REMINDER": "Приём у врача",
+    "REMINDER_UPDATED": "Напоминание обновлено",
+    "REMINDER_DELETED": "Напоминание удалено"
+  },
+  "defaults": {
+    "notification": "Уведомление"
+  },
+  "relativeTime": {
+    "justNow": "только что",
+    "inMinutes": "через {{count}} мин.",
+    "minutesAgo": "{{count}} мин. назад"
+  }
+}

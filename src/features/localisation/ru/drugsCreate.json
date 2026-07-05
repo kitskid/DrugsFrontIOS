@@ -1,0 +1,279 @@
+{
+  "drugsScreen": {
+    "searchPlaceholder": "Поиск по лекарствам",
+    "emptyText": "Здесь пока нет лекарств"
+  },
+  "tabs": {
+    "generalInfo": "Общая инф.",
+    "intakes": "Приёмы",
+    "files": "Файлы"
+  },
+  "filesTab": {
+    "empty": "Здесь пока нет файлов",
+    "uploadError": "Ошибка загрузки",
+    "fileSizeUnits": {
+      "bytes": "Б",
+      "kb": "КБ",
+      "mb": "МБ",
+      "gb": "ГБ"
+    },
+    "addFileModal": {
+      "title": "Добавить файл",
+      "takePhoto": "Сделать фото",
+      "openGallery": "Открыть галерею",
+      "uploadFromStorage": "Загрузить из хранилища",
+      "defaultFileName": "Файл",
+      "cloudFileError": "Не удалось получить файл из облака. Откройте Google Диск, сделайте файл доступным офлайн и попробуйте снова.",
+      "storagePickError": "Не удалось загрузить файл из хранилища"
+    }
+  },
+  "intakesTab": {
+    "eventsCount_one": "{{count}} событие",
+    "eventsCount_few": "{{count}} события",
+    "eventsCount_many": "{{count}} событий",
+    "loadError": "Не удалось загрузить календарь"
+  },
+  "screenTitles": {
+    "profile": "Профиль лекарства",
+    "formDosage": "Форма и дозировка",
+    "regimen": "Схема приёма",
+    "notify": "Настройка напоминаний",
+    "periodicity": "Периодичность"
+  },
+  "periodicity": {
+    "scheduleLabel": "Расписание",
+    "weekDaysLabel": "Дни недели",
+    "datePickerTitle": "Дата приёма",
+    "emptyDatesWarning": "Добавьте хотя бы одну дату",
+    "saveButton": "Сохранить периодичность",
+    "scheduleTypes": {
+      "interval": "Интервал",
+      "weekDays": "По дням недели",
+      "dates": "Даты"
+    }
+  },
+  "meals": {
+    "emptyTitle": "Приёмы пищи не указаны",
+    "specifyButton": "Указать",
+    "periodicityTitle": "Периодичность",
+    "mealReminderLabel": "Напоминать о приёме пищи",
+    "editMealsButton": "Редактировать мои приёмы пищи",
+    "whenToTakeLabel": "Когда принимать лекарство",
+    "intakeMomentLabel": "Момент приёма лекарства",
+    "foodRelation": {
+      "before": "До еды",
+      "during": "Во время еды",
+      "after": "После еды"
+    },
+    "offsetLabel": {
+      "before": "За",
+      "after": "Через"
+    },
+    "offsetPresets": {
+      "5m": "5 мин",
+      "15m": "15 мин",
+      "30m": "30 мин",
+      "1h": "1 час",
+      "2h": "2 часа",
+      "custom": "Свой вариант"
+    },
+    "periodicityLabel": {
+      "everyDay": "Каждый день",
+      "everyNDays_one": "Каждый {{count}} день",
+      "everyNDays_few": "Каждые {{count}} дня",
+      "everyNDays_many": "Каждые {{count}} дней",
+      "individualDates": "Индивидуальные даты"
+    }
+  },
+  "infoTab": {
+    "drugNamePlaceholder": "Название лекарства",
+    "formDosageTitle": "Форма и дозировка",
+    "formDosagePlaceholder": "Форма выпуска, дозировка, ед. изм.",
+    "formDosageInfoMessage": "Заполните форму и дозировку, чтобы вести учёт лекарств в аптечке",
+    "noteTitle": "Заметка",
+    "notePlaceholder": "Например натощак или перед сном",
+    "regimenTitle": "Схема приёма",
+    "regimenPlaceholder": "Не выбрано",
+    "regimenWarningMessage": "Настройте схему приёма, чтобы получать уведомления",
+    "reminderTitle": "Напоминание",
+    "notifyParamsTitle": "Параметры напоминания",
+    "notifyParamsPlaceholder": "Не выбрано"
+  },
+  "toasts": {
+    "drugNameRequiredForSave": "Название лекарства обязательно для сохранения",
+    "formDosageRequiredForSave": "Заполните форму и дозировку",
+    "regimenRequiredForSave": "Настройте схему приёма",
+    "individualRegimenNotSupported": "Индивидуальная схема с несколькими днями пока не поддерживается",
+    "saveSuccess": "Лекарство сохранено",
+    "updateSuccess": "Изменения сохранены",
+    "deleteSuccess": "Лекарство удалено",
+    "deleteServerError": "Не удалось удалить лекарство",
+    "saveServerError": "Не удалось сохранить лекарство",
+    "loadError": "Не удалось загрузить лекарство",
+    "fileUploadError": "Не удалось загрузить файл",
+    "fileDeleteError": "Не удалось удалить файл",
+    "fileDownloadError": "Не удалось скачать файл",
+    "fileDownloadSuccess": "Файл «{{fileName}}» сохранён в «{{locationLabel}}»"
+  },
+  "modals": {
+    "requiredError": "Поле обязательно к заполнению для сохранения",
+    "deleteModal": {
+      "title": "Вы действительно хотите удалить это лекарство?",
+      "no": "Нет",
+      "yes": "Да, удалить"
+    },
+    "name": {
+      "title": "Название лекарства",
+      "placeholder": "Введите название"
+    },
+    "note": {
+      "title": "Заметка",
+      "placeholder": "Например натощак или перед сном"
+    },
+    "back": "Вернуться",
+    "save": "Сохранить"
+  },
+  "formDosage": {
+    "releaseFormLabel": "Форма выпуска",
+    "releaseFormPlaceholder": "Например таблетки или капсулы",
+    "dosageAmountLabel": "Дозировка / Количество",
+    "dosageAmountPlaceholder": "Число",
+    "dosageUnitLabel": "Единица измерения",
+    "dosageUnitPlaceholder": "Например мг, мл, шт и тп",
+    "saveButton": "Сохранить форму и дозировку",
+    "requiredError": "Поле обязательно к заполнению для сохранения",
+    "releaseFormOptions": {
+      "capsules": "Капсулы",
+      "pills": "Пилюли",
+      "dragee": "Драже",
+      "tablets": "Таблетки",
+      "granules": "Гранулы",
+      "powder": "Порошок",
+      "lozenges": "Леденцы"
+    },
+    "dosageUnitOptions": {
+      "mg": "мг",
+      "g": "г",
+      "ml": "мл",
+      "l": "л",
+      "drops": "капли",
+      "pcs": "шт",
+      "iu": "МЕ"
+    }
+  },
+  "regimen": {
+    "saveButton": "Сохранить схему приёма",
+    "typeLabel": "Тип схемы приёма",
+    "typePlaceholder": "Количество раз в сутки",
+    "dateStartLabel": "Дата старта",
+    "timeStartLabel": "Время старта",
+    "daysCountLabel": "Кол-во дней",
+    "types": {
+      "dailyAtTime": "Ежедневно в заданное время",
+      "everyNHours": "Каждые N часов",
+      "weekDays": "По дням недели",
+      "everyNDays": "Каждые N дней",
+      "individual": "Индивидуальная",
+      "meals": "Привязка к приёмам пищи"
+    }
+  },
+  "regimenTypes": {
+    "warningAddOneTime": "Добавьте хотя бы одно время приёма",
+    "warningAddOneWeekDay": "Добавьте хотя бы один день недели",
+    "warningAddOneIndividualDay": "Добавьте хотя бы один день приёма",
+    "warningDuplicateIndividualDay": "Этот день уже добавлен",
+    "dailyPlanTitle": "План приёмов",
+    "timeStartModalTitle": "Время старта",
+    "everyHour": {
+      "intervalTitle": "Интервал каждые",
+      "pauseTitle": "Пауза приема",
+      "fromLabel": "С",
+      "toLabel": "До",
+      "fromModalTitle": "Не беспокоить с",
+      "toModalTitle": "Не беспокоить до",
+      "everyLabel": "Каждые",
+      "presets": {
+        "2": "2 часа",
+        "4": "4 часа",
+        "6": "6 часов",
+        "8": "8 часов",
+        "12": "12 часов",
+        "custom": "Свой вариант"
+      }
+    },
+    "everyDay": {
+      "unitShort": "дн"
+    },
+    "weekDays": {
+      "mondayShort": "Пн",
+      "tuesdayShort": "Вт",
+      "wednesdayShort": "Ср",
+      "thursdayShort": "Чт",
+      "fridayShort": "Пт",
+      "saturdayShort": "Сб",
+      "sundayShort": "Вс",
+      "mondayTitle": "Понедельник",
+      "tuesdayTitle": "Вторник",
+      "wednesdayTitle": "Среда",
+      "thursdayTitle": "Четверг",
+      "fridayTitle": "Пятница",
+      "saturdayTitle": "Суббота",
+      "sundayTitle": "Воскресенье",
+      "applyToAll": "Применить ко всем дням"
+    }
+  },
+  "notifications": {
+    "presetsTitle": "Напоминание о приёме за",
+    "customOffsetLabel": "Напомнить за",
+    "doNotDisturbTitle": "Не беспокоить",
+    "fromLabel": "С",
+    "toLabel": "До",
+    "fromModalTitle": "Не беспокоить с",
+    "toModalTitle": "Не беспокоить до",
+    "saveButton": "Сохранить напоминания",
+    "presets": {
+      "5m": "5 мин",
+      "15m": "15 мин",
+      "30m": "30 мин",
+      "1h": "1 час",
+      "1d": "1 день",
+      "custom": "Свой вариант"
+    },
+    "customOffsetOptions": {
+      "30m": "30 мин",
+      "1h": "1 час",
+      "2h": "2 ч",
+      "3h": "3 ч",
+      "6h": "6 ч",
+      "12h": "12 ч",
+      "1d": "1 день",
+      "2d": "2 дня"
+    },
+    "summary": {
+      "atIntakeOnly": "Только во время приёма",
+      "5m": "за 5 минут",
+      "15m": "за 15 минут",
+      "30m": "за 30 минут",
+      "1h": "за 1 час",
+      "1d": "за 1 день",
+      "customPrefix": "за",
+      "customUnits": {
+        "minute": {
+          "one": "минуту",
+          "few": "минуты",
+          "many": "минут"
+        },
+        "hour": {
+          "one": "час",
+          "few": "часа",
+          "many": "часов"
+        },
+        "day": {
+          "one": "день",
+          "few": "дня",
+          "many": "дней"
+        }
+      }
+    }
+  }
+}
