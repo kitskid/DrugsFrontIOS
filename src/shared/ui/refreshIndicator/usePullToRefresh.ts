@@ -411,7 +411,9 @@ export const usePullToRefresh = ({
           if (beganAtTop.value && offsetY < 0) {
             updatePullDistance(-offsetY);
           } else if (isIosPullEnabled) {
-            if (offsetY >= 0) {
+            // Only write when transitioning out of a pull — avoids redundant SharedValue
+            // writes (and the Reanimated JSI queue entries they create) on every scroll frame.
+            if (offsetY >= 0 && pullDistance.value > 0) {
               updatePullDistance(0);
             }
           } else if (!isAndroidPullGestureActive.value) {

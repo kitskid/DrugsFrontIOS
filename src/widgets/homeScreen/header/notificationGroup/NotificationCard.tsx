@@ -1,4 +1,4 @@
-import {useMemo} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
@@ -15,11 +15,18 @@ import {
 type NotificationCardProps = {
   reminder: NotificationReminder;
   width: number;
-  nowMs: number;
 };
 
-export const NotificationCard = ({reminder, width, nowMs}: NotificationCardProps) => {
+export const NotificationCard = ({reminder, width}: NotificationCardProps) => {
   const {t} = useTranslation('home', {i18n});
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  // Each card owns its own timer so re-renders stay isolated to that card only.
+  // A single shared timer in the parent would re-render the entire ScrollView tree every second.
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const remainingMs = useMemo(
     () => getRemainingMsUntilIntake(reminder.scheduledAt, nowMs),
