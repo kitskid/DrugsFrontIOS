@@ -426,7 +426,7 @@ export const usePullToRefresh = ({
 
         scrollCallbacks?.onScroll?.(event);
 
-        if (onPullExclusionZoneSync) {
+        if (onPullExclusionZoneSync && offsetY < PULL_REFRESH_MAX) {
           runOnJS(onPullExclusionZoneSync)(false);
         }
       },

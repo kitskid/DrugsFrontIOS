@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState} from 'react';
+import {useMemo} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 
@@ -15,19 +15,11 @@ import {
 type NotificationCardProps = {
   reminder: NotificationReminder;
   width: number;
+  nowMs: number;
 };
 
-export const NotificationCard = ({reminder, width}: NotificationCardProps) => {
+export const NotificationCard = ({reminder, width, nowMs}: NotificationCardProps) => {
   const {t} = useTranslation('home', {i18n});
-  const [nowMs, setNowMs] = useState(() => Date.now());
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setNowMs(Date.now());
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
 
   const remainingMs = useMemo(
     () => getRemainingMsUntilIntake(reminder.scheduledAt, nowMs),

@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useRef} from 'react';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -23,6 +23,16 @@ const NEXT_CARD_PEEK_WIDTH = 12;
 export const NotificationGroupScroll = ({reminders}: NotificationGroupScrollProps) => {
   const {width: screenWidth} = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
+
+  // Single shared timer for all cards — instead of N intervals (one per card)
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    if (reminders.length === 0) {
+      return;
+    }
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [reminders.length]);
 
   const cardWidth =
     screenWidth - CARD_LEFT_FROM_SCREEN - CARD_GAP - NEXT_CARD_PEEK_WIDTH;
@@ -85,7 +95,7 @@ export const NotificationGroupScroll = ({reminders}: NotificationGroupScrollProp
         snapToOffsets={snapOffsets}
         snapToAlignment="start"
         disableIntervalMomentum
-        scrollEventThrottle={16}
+        // scrollEventThrottle removed — no onScroll handler, no need to emit events
         onScrollEndDrag={handleScrollEndDrag}
         onMomentumScrollEnd={handleScrollEnd}
         contentContainerStyle={[
@@ -102,7 +112,7 @@ export const NotificationGroupScroll = ({reminders}: NotificationGroupScrollProp
                 marginRight: index < reminders.length - 1 ? CARD_GAP : 0,
               },
             ]}>
-            <NotificationCard reminder={reminder} width={cardWidth} />
+            <NotificationCard reminder={reminder} width={cardWidth} nowMs={nowMs} />
           </View>
         ))}
       </ScrollView>
