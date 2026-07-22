@@ -144,7 +144,12 @@ export const DrugsCreateScreen = () => {
   const releaseDosage = useAppSelector(state => state.drugsCreate.releaseDosage);
   const regimen = useAppSelector(state => state.drugsCreate.regimen);
   const notifications = useAppSelector(state => state.drugsCreate.notifications);
-  const [selectedTabId, setSelectedTabId] = useState<DrugsCreateTabId>('general');
+  const [selectedTabId, setSelectedTabId] = useState<DrugsCreateTabId>(
+    () => requestedTab ?? 'general',
+  );
+  const [keepIntakesTabMounted, setKeepIntakesTabMounted] = useState(
+    () => (requestedTab ?? 'general') === 'intakes',
+  );
   const [openIntakeId, setOpenIntakeId] = useState<string | undefined>(
     requestedOpenIntakeId,
   );
@@ -832,8 +837,10 @@ export const DrugsCreateScreen = () => {
   const intakesTab = {
     id: 'intakes',
     title: t('tabs.intakes'),
+    keepMounted: keepIntakesTabMounted,
     content:
-      isEditMode && prescriptionId && prescriptionData ? (
+      isEditMode && prescriptionId && prescriptionData &&
+      (keepIntakesTabMounted || selectedTabId === 'intakes') ? (
         <DrugsCreateCalendarTab
           prescriptionId={prescriptionId}
           startDateIso={prescriptionData.startDate}
@@ -885,7 +892,12 @@ export const DrugsCreateScreen = () => {
                   ? styles.intakesTabContent
                   : styles.generalTabContent
             }
-            onTabChange={tabId => setSelectedTabId(tabId)}
+            onTabChange={tabId => {
+              setSelectedTabId(tabId);
+              if (tabId === 'intakes') {
+                setKeepIntakesTabMounted(true);
+              }
+            }}
           />
         </View>
         {isFilesTab &&

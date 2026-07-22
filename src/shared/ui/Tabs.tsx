@@ -20,6 +20,8 @@ type TabItem<T extends string = string> = {
   id: T;
   title: string;
   content: ReactNode;
+  /** Keep tab content mounted while hidden (display: none). */
+  keepMounted?: boolean;
 };
 
 type TabsItems<T extends string = string> =
@@ -152,11 +154,6 @@ export const Tabs = <T extends string>({
     syncIndicatorToIndex(normalizedSelectedIndex, animated);
   }, [normalizedSelectedIndex, selectedIndexSv, syncIndicatorToIndex]);
 
-  const activeTab = useMemo(
-    () => tabs.find(tab => tab.id === selectedTabId) ?? tabs[0],
-    [selectedTabId, tabs],
-  );
-
   const handleTabLayout = useCallback(
     (index: number, event: LayoutChangeEvent) => {
       const {x, width} = event.nativeEvent.layout;
@@ -205,7 +202,23 @@ export const Tabs = <T extends string>({
           stretchContent ? styles.contentContainerStretched : undefined,
           contentContainerStyle,
         ]}>
-        {activeTab.content}
+        {tabs.map(tab => {
+          const isActive = tab.id === selectedTabId;
+          if (!isActive && !tab.keepMounted) {
+            return null;
+          }
+
+          return (
+            <View
+              key={tab.id}
+              style={[
+                stretchContent ? styles.preservedTabContent : undefined,
+                isActive ? undefined : styles.hiddenTabContent,
+              ]}>
+              {tab.content}
+            </View>
+          );
+        })}
       </View>
     </View>
   );
@@ -243,5 +256,11 @@ const styles = StyleSheet.create({
   },
   contentContainerStretched: {
     flex: 1,
+  },
+  preservedTabContent: {
+    flex: 1,
+  },
+  hiddenTabContent: {
+    display: 'none',
   },
 });

@@ -5,16 +5,19 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useMutation} from '@tanstack/react-query';
 import axios from 'axios';
+import {useTranslation} from 'react-i18next';
 
 import {ButtonMain} from '../../../shared/ui/ButtonMain.tsx';
 import {CodeEnterKeyboardInputs} from '../../../shared/ui/codeEnterKeyboardInputs/codeEnterKeyboardInputs.tsx';
 import type {SignInStackParamList} from '../../../features/navigation/auth/SignInStack.tsx';
 import type {AuthStackParamList} from '../../../features/navigation/auth/AuthStack.tsx';
 import {apiAuth} from '../../../features/api/apiAuth.ts';
+import i18n from '../../../features/localisation/i18n.ts';
 
 type PasswordResetCodeScreenProps = NativeStackScreenProps<SignInStackParamList, 'PasswordResetCode'>;
 
 export const PasswordResetCodeScreen = ({navigation}: PasswordResetCodeScreenProps) => {
+  const {t} = useTranslation('auth', {i18n});
   const insets = useSafeAreaInsets();
   const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
   const [code, setCode] = useState('');
@@ -48,7 +51,7 @@ export const PasswordResetCodeScreen = ({navigation}: PasswordResetCodeScreenPro
     }
 
     if (code.length < 5) {
-      setCodeErrorText('Поле обязательно для заполнения');
+      setCodeErrorText(t('common.field_required'));
       return;
     }
 
@@ -60,11 +63,11 @@ export const PasswordResetCodeScreen = ({navigation}: PasswordResetCodeScreenPro
       navigation.replace('PasswordResetNewPassword');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
-        setCodeErrorText('Неверный код');
+        setCodeErrorText(t('common.invalid_code'));
         return;
       }
 
-      setCodeErrorText('Ошибка на сервере');
+      setCodeErrorText(t('common.server_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -80,14 +83,14 @@ export const PasswordResetCodeScreen = ({navigation}: PasswordResetCodeScreenPro
       <View style={styles.inner}>
         <Image source={require('../../../../assets/images/logo.png')} style={styles.logo} />
         <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-          <Text style={styles.title}>Подтвердите сброс пароля</Text>
+          <Text style={styles.title}>{t('password_reset.code_title')}</Text>
           <CodeEnterKeyboardInputs
             onCodeChange={handleCodeChange}
             onResendCodePress={async () => {
               try {
                 await resendForgotCodeMutation();
               } catch {
-                setCodeErrorText('Ошибка на сервере');
+                setCodeErrorText(t('common.server_error'));
               }
             }}
             errorText={codeErrorText}
@@ -103,12 +106,12 @@ export const PasswordResetCodeScreen = ({navigation}: PasswordResetCodeScreenPro
                     }
                     navigation.goBack();
                   }}
-                  title={'Вернуться'}
+                  title={t('common.back')}
                   variant={'secondary'}
                 />
               </View>
               <View style={styles.buttonWrapper}>
-                <ButtonMain onPress={handleConfirmPress} title={'Подтвердить'} isLoading={isSubmitting} />
+                <ButtonMain onPress={handleConfirmPress} title={t('common.confirm')} isLoading={isSubmitting} />
               </View>
             </View>
           </View>

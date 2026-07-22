@@ -1,12 +1,13 @@
-import {useCallback, useMemo, useRef, useState} from 'react';
+import {useCallback, useMemo, useRef, useState, type RefObject} from 'react';
 import {
   NativeScrollEvent,
   NativeSyntheticEvent,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
+import type {SharedValue} from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import {useTranslation} from 'react-i18next';
 
@@ -19,6 +20,10 @@ import type {HomeEventRowItem} from './homeEventTypes.ts';
 type EventsCalendarProps = {
   mappedEvents: HomeEventRowItem[];
   onCalendarPress: () => void;
+  cardRef?: RefObject<View | null>;
+  onCardLayout?: () => void;
+  pullTouchSuppressed?: SharedValue<boolean>;
+  calendarScrollAtTop?: SharedValue<boolean>;
 };
 
 type DayItem = {
@@ -47,6 +52,7 @@ const ROWS_PER_PAGE = 3;
 const PAGE_SNAP = ROW_SNAP * ROWS_PER_PAGE;
 const VISIBLE_ROWS_HEIGHT = ROW_HEIGHT * ROWS_PER_PAGE + ROW_GAP * (ROWS_PER_PAGE - 1);
 const ROWS_PADDING = (CARD_HEIGHT - VISIBLE_ROWS_HEIGHT) / 2;
+const CALENDAR_SCROLL_TOP_TOLERANCE = 3;
 
 const getLocale = (language: string): string => (language === 'en' ? 'en-US' : 'ru-RU');
 
@@ -140,7 +146,14 @@ const findDayForRow = (days: DayItem[], rowIndex: number): number => {
   return 0;
 };
 
-export const EventsCalendar = ({mappedEvents, onCalendarPress}: EventsCalendarProps) => {
+export const EventsCalendar = ({
+  mappedEvents,
+  onCalendarPress,
+  cardRef,
+  onCardLayout,
+  pullTouchSuppressed,
+  calendarScrollAtTop,
+}: EventsCalendarProps) => {
   const {t} = useTranslation('home', {i18n});
   const {days, rows} = useMemo(
     () =>
@@ -148,9 +161,79 @@ export const EventsCalendar = ({mappedEvents, onCalendarPress}: EventsCalendarPr
     [mappedEvents, i18n.language, t],
   );
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const localCardRef = useRef<View>(null);
+  const calendarCardRef = cardRef ?? localCardRef;
   const dayListRef = useRef<ScrollView>(null);
   const rowsListRef = useRef<ScrollView>(null);
   const isSyncing = useRef(false);
+  const isNestedDraggingRef = useRef(false);
+  const daysScrollOffsetRef = useRef(0);
+  const rowsScrollOffsetRef = useRef(0);
+
+  const updateCalendarScrollAtTop = useCallback(() => {
+    if (!calendarScrollAtTop) {
+      return;
+    }
+
+    calendarScrollAtTop.value =
+      daysScrollOffsetRef.current <= CALENDAR_SCROLL_TOP_TOLERANCE &&
+      rowsScrollOffsetRef.current <= CALENDAR_SCROLL_TOP_TOLERANCE;
+  }, [calendarScrollAtTop]);
+
+  const handleDaysScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      daysScrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+      updateCalendarScrollAtTop();
+    },
+    [updateCalendarScrollAtTop],
+  );
+
+  const handleRowsScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      rowsScrollOffsetRef.current = event.nativeEvent.contentOffset.y;
+      updateCalendarScrollAtTop();
+    },
+    [updateCalendarScrollAtTop],
+  );
+
+  const suppressPullTouch = useCallback(() => {
+    if (
+      pullTouchSuppressed &&
+      calendarScrollAtTop &&
+      calendarScrollAtTop.value === false
+    ) {
+      pullTouchSuppressed.value = true;
+    }
+  }, [calendarScrollAtTop, pullTouchSuppressed]);
+
+  const releasePullTouch = useCallback(() => {
+    if (!isNestedDraggingRef.current && pullTouchSuppressed) {
+      pullTouchSuppressed.value = false;
+    }
+  }, [pullTouchSuppressed]);
+
+  const handleNestedScrollBeginDrag = useCallback(() => {
+    isNestedDraggingRef.current = true;
+    suppressPullTouch();
+  }, [suppressPullTouch]);
+
+  const handleNestedScrollEndDrag = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      isNestedDraggingRef.current = false;
+      const velocityY = event.nativeEvent.velocity?.y ?? 0;
+      if (Math.abs(velocityY) < 0.05 && pullTouchSuppressed) {
+        pullTouchSuppressed.value = false;
+      }
+    },
+    [pullTouchSuppressed],
+  );
+
+  const handleNestedMomentumEnd = useCallback(() => {
+    isNestedDraggingRef.current = false;
+    if (pullTouchSuppressed) {
+      pullTouchSuppressed.value = false;
+    }
+  }, [pullTouchSuppressed]);
 
   const daysSnapOffsets = useMemo(
     () => days.map((_, index) => index * DAY_SNAP),
@@ -224,7 +307,13 @@ export const EventsCalendar = ({mappedEvents, onCalendarPress}: EventsCalendarPr
 
   return (
     <View>
-      <View style={styles.cardShadow}>
+      <View
+        ref={calendarCardRef}
+        onLayout={onCardLayout}
+        onTouchStart={suppressPullTouch}
+        onTouchEnd={releasePullTouch}
+        onTouchCancel={releasePullTouch}
+        style={styles.cardShadow}>
         <View style={styles.card}>
           <View style={styles.daysColumn}>
             <ScrollView
@@ -236,7 +325,14 @@ export const EventsCalendar = ({mappedEvents, onCalendarPress}: EventsCalendarPr
               disableIntervalMomentum
               decelerationRate="fast"
               bounces={false}
-              onMomentumScrollEnd={handleDaysMomentumEnd}
+              scrollEventThrottle={16}
+              onScroll={handleDaysScroll}
+              onScrollBeginDrag={handleNestedScrollBeginDrag}
+              onScrollEndDrag={handleNestedScrollEndDrag}
+              onMomentumScrollEnd={event => {
+                handleDaysMomentumEnd(event);
+                handleNestedMomentumEnd();
+              }}
               contentContainerStyle={styles.daysContent}>
               {days.map((item, index) => (
                 <View key={item.key}>
@@ -276,7 +372,14 @@ export const EventsCalendar = ({mappedEvents, onCalendarPress}: EventsCalendarPr
               disableIntervalMomentum
               decelerationRate="fast"
               bounces={false}
-              onMomentumScrollEnd={handleRowsMomentumEnd}
+              scrollEventThrottle={16}
+              onScroll={handleRowsScroll}
+              onScrollBeginDrag={handleNestedScrollBeginDrag}
+              onScrollEndDrag={handleNestedScrollEndDrag}
+              onMomentumScrollEnd={event => {
+                handleRowsMomentumEnd(event);
+                handleNestedMomentumEnd();
+              }}
               contentContainerStyle={styles.rowsContent}>
               {rows.map(item => (
                 <View key={item.key} style={styles.rowWrapper}>

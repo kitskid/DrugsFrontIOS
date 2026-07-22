@@ -8,6 +8,7 @@ import {InputMain} from "../../../shared/ui/InputMain.tsx";
 import {useState} from "react";
 import {IconMapper} from "../../../shared/ui/IconMapper.tsx";
 import {useMutation} from "@tanstack/react-query";
+import {useTranslation} from "react-i18next";
 import {apiAuth} from "../../../features/api/apiAuth.ts";
 import axios from "axios";
 import {Checkbox} from "../../../shared/ui/Checkbox.tsx";
@@ -15,6 +16,7 @@ import {TouchableTextIsIcon} from "../../../shared/ui/TouchableTextIsIcon.tsx";
 import Animated, {FadeIn} from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {SESSION_ID_HEADER} from "../../../features/api/index.ts";
+import i18n from "../../../features/localisation/i18n.ts";
 import type {AuthStackParamList} from "../../../features/navigation/auth/AuthStack.tsx";
 import type {NativeStackNavigationProp} from "@react-navigation/native-stack";
 
@@ -24,6 +26,7 @@ type SignUpEmailEnteringScreenProps = NativeStackScreenProps<
 >;
 
 export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScreenProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const insets = useSafeAreaInsets();
     const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
     const [email, setEmail] = useState<string>('')
@@ -55,7 +58,7 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
         let hasError = false;
 
         if (!emailRegex.test(normalizedEmail)) {
-            setEmailErrorText('Неверный формат E-mail');
+            setEmailErrorText(t('common.email_invalid'));
             hasError = true;
         } else {
             setEmailErrorText(null);
@@ -95,7 +98,7 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
                     : null;
 
             if (typeof sessionId !== 'string' || sessionId.trim().length === 0) {
-                setEmailErrorText('Ошибка на сервере');
+                setEmailErrorText(t('common.server_error'));
                 return;
             }
 
@@ -103,15 +106,15 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
             navigation.replace('SignUpEmailConfirm');
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 400) {
-                setEmailErrorText('Неверный формат E-mail');
+                setEmailErrorText(t('common.email_invalid'));
                 return;
             }
             if (axios.isAxiosError(error) && error.response?.status === 409) {
-                setEmailErrorText('E-mail уже занят');
+                setEmailErrorText(t('sign_up.email_taken'));
                 return;
             }
 
-            setEmailErrorText('Ошибка на сервере');
+            setEmailErrorText(t('common.server_error'));
         }
     };
 
@@ -128,7 +131,7 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
                     style={styles.logo}
                 />
                 <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-                    <Text style={styles.title}>Введите E-mail</Text>
+                    <Text style={styles.title}>{t('sign_up.email_title')}</Text>
                     <InputMain
                         icon={'mail'}
                         value={email}
@@ -138,11 +141,7 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
                     />
                     <View style={styles.infoCard}>
                         <IconMapper icon={'info'} size={24} weight={1.5} color={'rgba(35, 142, 235, 1)'}/>
-                        <Text style={styles.infoCardText}>
-                            На указанный E-mail будет отправлен код подтверждения.{'\n\n'}
-                            Убедитесь, что адрес введен правильно.{'\n'}
-                            Проверьте папку "Спам", если письмо не пришло.
-                        </Text>
+                        <Text style={styles.infoCardText}>{t('common.email_code_info')}</Text>
                     </View>
                     <View style={styles.footer}>
                         <View style={styles.agreementContainer}>
@@ -162,8 +161,8 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
                                 />
                                 <View style={styles.agreementTextContainer}>
                                     <View style={styles.agreementRow}>
-                                        <Text>Принимаю </Text>
-                                        <TouchableTextIsIcon text={'пользовательское соглашение'} onPress={() => {
+                                        <Text>{t('sign_up.accept_agreement')}</Text>
+                                        <TouchableTextIsIcon text={t('sign_up.user_agreement')} onPress={() => {
                                         }}/>
                                     </View>
 
@@ -171,7 +170,7 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
                                         <Animated.Text
                                             entering={FadeIn.duration(180)}
                                             style={styles.checkboxErrorText}>
-                                            Необходимо принять пользовательское соглашение
+                                            {t('sign_up.agreement_required')}
                                         </Animated.Text>
                                     ) : null}
                                 </View>
@@ -187,14 +186,14 @@ export const SignUpEmailEnteringScreen = ({navigation}: SignUpEmailEnteringScree
                                         }
                                         navigation.goBack();
                                     }}
-                                    title={'Вернуться'}
+                                    title={t('common.back')}
                                     variant={'secondary'}
                                 />
                             </View>
                             <View style={styles.buttonWrapper}>
                                 <ButtonMain
                                     onPress={handleSubmit}
-                                    title={'Отправить код'}
+                                    title={t('common.send_code')}
                                     isLoading={isAddEmailPending}
                                 />
                             </View>

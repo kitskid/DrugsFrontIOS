@@ -63,6 +63,7 @@ export const NotificationCard = ({reminder, width}: NotificationCardProps) => {
           backgroundImage={reminder.backgroundImage}
           medicationName={reminder.medicationName}
           size={36}
+          isWhiteBG
         />
         <Text style={styles.medicationName} numberOfLines={2} ellipsizeMode="tail">
           {reminder.medicationName}

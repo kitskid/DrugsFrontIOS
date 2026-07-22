@@ -394,6 +394,7 @@ export const CalendarScreen = () => {
       intakeId: item.id,
       prescriptionId: item.prescriptionId,
       status: item.status,
+      scheduledTime: item.scheduledTime,
     });
     statusModalRef.current?.present();
   }, []);

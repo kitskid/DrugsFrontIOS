@@ -21,5 +21,13 @@
     "justNow": "just now",
     "inMinutes": "in {{count}} min.",
     "minutesAgo": "{{count}} min. ago"
+  },
+  "alarmScreen": {
+    "takeMedication": "Take your medication",
+    "defaultMedicationName": "Medication",
+    "actions": {
+      "skip": "Skip",
+      "accept": "Taken"
+    }
   }
 }

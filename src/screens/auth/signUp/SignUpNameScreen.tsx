@@ -7,8 +7,10 @@ import type {SignUpStackParamList} from "../../../features/navigation/auth/SignU
 import {InputMain} from "../../../shared/ui/InputMain.tsx";
 import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
+import {useTranslation} from "react-i18next";
 import {IconMapper} from "../../../shared/ui/IconMapper.tsx";
 import {apiAuth} from "../../../features/api/apiAuth.ts";
+import i18n from "../../../features/localisation/i18n.ts";
 import {triggerAuthSyncWithWelcome} from "../../../app/useAuth.ts";
 
 type SignUpNameScreenProps = NativeStackScreenProps<
@@ -17,6 +19,7 @@ type SignUpNameScreenProps = NativeStackScreenProps<
 >;
 
 export const SignUpNameScreen = (_props: SignUpNameScreenProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const insets = useSafeAreaInsets();
     const [name, setName] = useState<string>('')
     const [nameErrorText, setNameErrorText] = useState<string | null>(null);
@@ -35,7 +38,7 @@ export const SignUpNameScreen = (_props: SignUpNameScreenProps) => {
         const trimmedName = name.trim();
 
         if (trimmedName.length === 0) {
-            setNameErrorText('Для сохранения поле обязательно к заполнению');
+            setNameErrorText(t('sign_up.name_required'));
             return;
         }
 
@@ -45,7 +48,7 @@ export const SignUpNameScreen = (_props: SignUpNameScreenProps) => {
             await updateNameMutation(trimmedName);
             triggerAuthSyncWithWelcome();
         } catch {
-            setNameErrorText('Ошибка на сервере');
+            setNameErrorText(t('common.server_error'));
         }
     };
 
@@ -66,7 +69,7 @@ export const SignUpNameScreen = (_props: SignUpNameScreenProps) => {
                     style={styles.logo}
                 />
                 <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-                    <Text style={styles.title}>Введите ваше имя</Text>
+                    <Text style={styles.title}>{t('sign_up.name_title')}</Text>
                     <InputMain
                         icon={'circle-user'}
                         value={name}
@@ -76,18 +79,18 @@ export const SignUpNameScreen = (_props: SignUpNameScreenProps) => {
                     />
                     <View style={styles.infoCard}>
                         <IconMapper icon="info" size={24} weight={1.5} color="rgba(35, 142, 235, 1)"/>
-                        <Text style={styles.infoText}>Чтобы мы знали, как к вам обращаться, это необязательно</Text>
+                        <Text style={styles.infoText}>{t('sign_up.name_info')}</Text>
                     </View>
                     <View style={styles.footer}>
                         <View style={styles.buttonsContainer}>
                             <ButtonMain
                                 onPress={handleSavePress}
-                                title={'Сохранить'}
+                                title={t('sign_up.save')}
                                 isLoading={isUpdateNamePending}
                             />
                             <ButtonMain
                                 onPress={handleSkipPress}
-                                title={'Пропустить'}
+                                title={t('sign_up.skip')}
                                 variant={'secondary'}
                             />
                         </View>

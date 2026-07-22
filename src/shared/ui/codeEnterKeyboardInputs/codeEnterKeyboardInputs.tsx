@@ -1,7 +1,9 @@
 import {useEffect, useMemo, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useTranslation} from 'react-i18next';
 
+import i18n from '../../../features/localisation/i18n';
 import {CodeEnterKeyboard} from './codeEnterKeyboard';
 import {CodeEnterInputs} from './codeEnterInputs';
 import {TouchableTextIsIcon} from '../TouchableTextIsIcon.tsx';
@@ -24,6 +26,7 @@ export const CodeEnterKeyboardInputs = ({
     onCodeChange,
     onResendCodePress,
 }: CodeEnterKeyboardInputsProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const [values, setValues] = useState<string[]>(Array(CODE_LENGTH).fill(''));
     const [timeLeft, setTimeLeft] = useState(RESEND_SECONDS);
     const errorProgress = useSharedValue(0);
@@ -95,8 +98,8 @@ export const CodeEnterKeyboardInputs = ({
         const seconds = timeLeft % 60;
         const minutesText = String(minutes).padStart(2, '0');
         const secondsText = String(seconds).padStart(2, '0');
-        return `Отправить код повторно через ${minutesText}:${secondsText}`;
-    }, [timeLeft]);
+        return t('common.resend_code_in', {time: `${minutesText}:${secondsText}`});
+    }, [t, timeLeft]);
 
     const handleResendCodePress = () => {
         onResendCodePress?.();
@@ -116,7 +119,7 @@ export const CodeEnterKeyboardInputs = ({
                     <Text style={styles.timerText}>{timerText}</Text>
                 ) : (
                         <TouchableTextIsIcon
-                            text="Отправить код повторно"
+                            text={t('common.resend_code')}
                             onPress={handleResendCodePress}
                             styleContainer={styles.resendButtonContainer}
                         />
@@ -124,7 +127,7 @@ export const CodeEnterKeyboardInputs = ({
 
                 <View style={styles.infoCard}>
                     <IconMapper icon="info" size={24} weight={1.5} color="rgba(35, 142, 235, 1)"/>
-                    <Text style={styles.infoText}>Код приходит в течение 1-2 минут</Text>
+                    <Text style={styles.infoText}>{t('common.code_arrival_info')}</Text>
                 </View>
             </View>
 

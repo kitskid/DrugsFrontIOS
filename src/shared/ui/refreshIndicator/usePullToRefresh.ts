@@ -14,6 +14,15 @@ import {
   type SharedValue,
 } from 'react-native-reanimated';
 
+export type PullExclusionZone = {
+  top: number;
+  bottom: number;
+  left?: number;
+  right?: number;
+};
+
+const PULL_EXCLUSION_PADDING = 16;
+
 export const PULL_REFRESH_THRESHOLD = 243;
 export const PULL_REFRESH_MAX = 365;
 const TOP_TOLERANCE = 3;
@@ -100,6 +109,19 @@ type PullToRefreshScrollCallbacks = {
 type UsePullToRefreshOptions = {
   onRefresh: () => void;
   isRefreshing?: boolean;
+  /**
+   * Android Pan pull gesture conflicts with nested scroll views in list headers.
+   * Disable it and rely on overscroll + scrollHandler instead.
+   */
+  enableAndroidPullGesture?: boolean;
+  /** Screen-space bounds where Android pull-to-refresh must not start. */
+  pullExclusionZone?: SharedValue<PullExclusionZone | null>;
+  /** Re-measure pull exclusion zones when the list scrolls. */
+  onPullExclusionZoneSync?: (force?: boolean) => void;
+  /** While true, pull distance is not updated (e.g. finger over nested scroll). */
+  pullTouchSuppressed?: SharedValue<boolean>;
+  /** When true, nested calendar scroll is at top and pull may pass through. */
+  calendarScrollAtTop?: SharedValue<boolean>;
   /** When set, receives clamped scroll offset on every scroll event. */
   trackedScrollOffset?: SharedValue<number>;
   scrollCallbacks?: PullToRefreshScrollCallbacks;
@@ -119,16 +141,73 @@ type UsePullToRefreshResult = {
 export const usePullToRefresh = ({
   onRefresh,
   isRefreshing = false,
+  enableAndroidPullGesture = true,
+  pullExclusionZone,
+  onPullExclusionZoneSync,
+  pullTouchSuppressed,
+  calendarScrollAtTop,
   trackedScrollOffset,
   scrollCallbacks,
 }: UsePullToRefreshOptions): UsePullToRefreshResult => {
   const isIosPullEnabled = Platform.OS === 'ios';
-  const isAndroidPullEnabled = Platform.OS === 'android';
+  const isAndroidPullEnabled =
+    Platform.OS === 'android' && enableAndroidPullGesture;
   const scrollOffset = useSharedValue(0);
   const pullDistance = useSharedValue(0);
   const beganAtTop = useSharedValue(false);
   const hasTriggeredRefresh = useSharedValue(false);
   const isAndroidPullGestureActive = useSharedValue(false);
+  const pullTouchStartY = useSharedValue(-1);
+  const PULL_ACTIVATION_OFFSET = 6;
+
+  const isInsidePullExclusionZone = (touchX: number, touchY: number) => {
+    'worklet';
+    const zone = pullExclusionZone?.value;
+    // Until the zone is measured, do not block pull anywhere.
+    if (zone == null) {
+      return false;
+    }
+
+    const top = zone.top - PULL_EXCLUSION_PADDING;
+    const bottom = zone.bottom + PULL_EXCLUSION_PADDING;
+    const left = (zone.left ?? 0) - PULL_EXCLUSION_PADDING;
+    const right = (zone.right ?? Number.MAX_SAFE_INTEGER) + PULL_EXCLUSION_PADDING;
+
+    return (
+      touchY >= top &&
+      touchY <= bottom &&
+      touchX >= left &&
+      touchX <= right
+    );
+  };
+
+  const isPullBlockedInCalendarArea = (touchX: number, touchY: number) => {
+    'worklet';
+    if (!isInsidePullExclusionZone(touchX, touchY)) {
+      return false;
+    }
+
+    // Calendar is at its top — allow pull-to-refresh to pass through.
+    if (calendarScrollAtTop?.value !== false) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const isPullSuppressed = () => {
+    'worklet';
+    if (pullTouchSuppressed?.value !== true) {
+      return false;
+    }
+
+    // Suppression from calendar touch is ignored while calendar is at top.
+    if (calendarScrollAtTop?.value !== false) {
+      return false;
+    }
+
+    return true;
+  };
 
   const pullProgress = useDerivedValue(() =>
     Math.min(1, pullDistance.value / PULL_REFRESH_THRESHOLD),
@@ -177,25 +256,90 @@ export const usePullToRefresh = ({
     );
   }, [hasTriggeredRefresh, pullDistance]);
 
-  const nativeScrollGesture = useMemo(() => Gesture.Native(), []);
+  const nativeScrollGesture = useMemo(
+    () => Gesture.Native().shouldCancelWhenOutside(false),
+    [],
+  );
 
   const androidPullGesture = useMemo(() => {
     if (!isAndroidPullEnabled) {
       return null;
     }
 
-    return Gesture.Pan()
-      .activeOffsetY(6)
+    const hasPullExclusionZone = pullExclusionZone != null;
+
+    let panGesture = Gesture.Pan()
+      .maxPointers(1)
       .failOffsetX([-40, 40])
-      .simultaneousWithExternalGesture(nativeScrollGesture)
+      .cancelsTouchesInView(false)
+      .simultaneousWithExternalGesture(nativeScrollGesture);
+
+    if (hasPullExclusionZone) {
+      panGesture = panGesture
+        .manualActivation(true)
+        .onTouchesDown((event, stateManager) => {
+          'worklet';
+          const touch = event.allTouches[0];
+          const touchX = touch?.absoluteX ?? touch?.x ?? -1;
+          const touchY = touch?.absoluteY ?? touch?.y ?? -1;
+          pullTouchStartY.value = touchY;
+
+          if (isPullSuppressed() || isPullBlockedInCalendarArea(touchX, touchY)) {
+            stateManager.fail();
+            return;
+          }
+
+          if (scrollOffset.value > TOP_TOLERANCE) {
+            stateManager.fail();
+          }
+        })
+        .onTouchesMove((event, stateManager) => {
+          'worklet';
+          const touch = event.allTouches[0];
+          const touchX = touch?.absoluteX ?? touch?.x ?? -1;
+          const touchY = touch?.absoluteY ?? touch?.y ?? -1;
+          if (pullTouchStartY.value < 0) {
+            return;
+          }
+
+          if (isPullSuppressed() || isPullBlockedInCalendarArea(touchX, touchY)) {
+            stateManager.fail();
+            return;
+          }
+
+          // Allow pull even when the list has no overflow (short content).
+          const deltaY = touchY - pullTouchStartY.value;
+          if (deltaY > PULL_ACTIVATION_OFFSET) {
+            stateManager.activate();
+          } else if (deltaY < -PULL_ACTIVATION_OFFSET) {
+            stateManager.fail();
+          }
+        })
+        .onTouchesUp(() => {
+          'worklet';
+          pullTouchStartY.value = -1;
+        })
+        .onTouchesCancelled(() => {
+          'worklet';
+          pullTouchStartY.value = -1;
+        });
+    } else {
+      panGesture = panGesture.activeOffsetY(PULL_ACTIVATION_OFFSET);
+    }
+
+    return panGesture
       .onBegin(() => {
+        'worklet';
+        // Treat "no scroll possible / at top" the same — short content stays at 0.
         const isAtTop = scrollOffset.value <= TOP_TOLERANCE;
         beganAtTop.value = isAtTop;
         isAndroidPullGestureActive.value = isAtTop;
       })
       .onUpdate(event => {
+        'worklet';
         if (
           hasTriggeredRefresh.value ||
+          isPullSuppressed() ||
           !beganAtTop.value ||
           !isAndroidPullGestureActive.value
         ) {
@@ -210,6 +354,7 @@ export const usePullToRefresh = ({
         updatePullDistance(0);
       })
       .onEnd(() => {
+        'worklet';
         if (
           hasTriggeredRefresh.value ||
           !beganAtTop.value ||
@@ -223,12 +368,18 @@ export const usePullToRefresh = ({
         finishPull();
       })
       .onFinalize(() => {
+        'worklet';
         isAndroidPullGestureActive.value = false;
+        pullTouchStartY.value = -1;
       });
   }, [
+    calendarScrollAtTop,
     finishPull,
     isAndroidPullEnabled,
     nativeScrollGesture,
+    pullExclusionZone,
+    pullTouchStartY,
+    pullTouchSuppressed,
     updatePullDistance,
   ]);
 
@@ -244,6 +395,9 @@ export const usePullToRefresh = ({
     {
       onBeginDrag: event => {
         beganAtTop.value = event.contentOffset.y <= TOP_TOLERANCE;
+        if (onPullExclusionZoneSync) {
+          runOnJS(onPullExclusionZoneSync)(true);
+        }
         scrollCallbacks?.onBeginDrag?.(event);
       },
       onScroll: event => {
@@ -253,7 +407,7 @@ export const usePullToRefresh = ({
           trackedScrollOffset.value = Math.max(0, offsetY);
         }
 
-        if (!hasTriggeredRefresh.value) {
+        if (!hasTriggeredRefresh.value && !isPullSuppressed()) {
           if (beganAtTop.value && offsetY < 0) {
             updatePullDistance(-offsetY);
           } else if (isIosPullEnabled) {
@@ -271,12 +425,19 @@ export const usePullToRefresh = ({
         }
 
         scrollCallbacks?.onScroll?.(event);
+
+        if (onPullExclusionZoneSync) {
+          runOnJS(onPullExclusionZoneSync)(false);
+        }
       },
       onEndDrag: event => {
-        if (!isAndroidPullGestureActive.value && isIosPullEnabled) {
-          if (beganAtTop.value && pullDistance.value > 0) {
-            finishPull();
-          }
+        if (
+          !isAndroidPullGestureActive.value &&
+          !isPullSuppressed() &&
+          beganAtTop.value &&
+          pullDistance.value > 0
+        ) {
+          finishPull();
         }
 
         scrollCallbacks?.onEndDrag?.(event);
@@ -285,7 +446,13 @@ export const usePullToRefresh = ({
         scrollCallbacks?.onMomentumEnd?.(event);
       },
     },
-    [scrollCallbacks, trackedScrollOffset],
+    [
+      calendarScrollAtTop,
+      onPullExclusionZoneSync,
+      pullTouchSuppressed,
+      scrollCallbacks,
+      trackedScrollOffset,
+    ],
   );
 
   const resetPull = useCallback(() => {

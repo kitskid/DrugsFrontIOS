@@ -1,10 +1,24 @@
-import {useCallback, useRef, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {
+    AppState,
+    InteractionManager,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    View,
+    type AppStateStatus,
+} from 'react-native';
+import Animated, {FadeIn, FadeOut, LinearTransition} from 'react-native-reanimated';
+import {
+    getIntakeSpecialSignalAlarmSoundInfo,
+    isIntakeSpecialSignalEnabled,
     isSilenceModeEnabled,
+    openIntakeSpecialSignalAlarmSoundSettings,
+    setIntakeSpecialSignalEnabled,
     setPushNotificationsEnabled,
     setSilenceModeEnabled,
-    usePushNotificationSettingsSync
+    usePushNotificationSettingsSync,
+    type IntakeSpecialSignalAlarmSoundInfo,
 } from '../../app/useFCMTokenRegistration.ts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {CompositeNavigationProp} from '@react-navigation/native';
@@ -44,6 +58,8 @@ type ProfileScreenNavigationProp = CompositeNavigationProp<
     >
 >;
 
+const LAYOUT_TRANSITION = LinearTransition.duration(180);
+
 export const ProfileScreen = () => {
     const {t} = useTranslation('profile', {i18n});
     const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -51,6 +67,9 @@ export const ProfileScreen = () => {
     const [email, setEmail] = useState<string | null>(null);
     const [isSilenceMode, setIsSilenceMode] = useState<boolean>(false);
     const [isNotify, setIsNotify] = useState<boolean>(false);
+    const [isIntakeSpecialSignal, setIsIntakeSpecialSignal] = useState<boolean>(false);
+    const [intakeSpecialSignalSoundInfo, setIntakeSpecialSignalSoundInfo] =
+        useState<IntakeSpecialSignalAlarmSoundInfo | null>(null);
     const logoutModalRef = useRef<BottomSheetModal>(null);
     const deleteAccountModalRef = useRef<BottomSheetModal>(null);
     const nameModalRef = useRef<BottomSheetModal>(null);
@@ -78,9 +97,55 @@ export const ProfileScreen = () => {
         setIsSilenceMode(await isSilenceModeEnabled());
     }, []);
 
+    const loadIntakeSpecialSignalSetting = useCallback(async () => {
+        setIsIntakeSpecialSignal(await isIntakeSpecialSignalEnabled());
+    }, []);
+
+    const loadIntakeSpecialSignalSoundInfo = useCallback(async () => {
+        if (Platform.OS !== 'android') {
+            setIntakeSpecialSignalSoundInfo(null);
+            return;
+        }
+
+        setIntakeSpecialSignalSoundInfo(await getIntakeSpecialSignalAlarmSoundInfo());
+    }, []);
+
+    const resolveIntakeSpecialSignalSoundLabel = useCallback(
+        (soundInfo: IntakeSpecialSignalAlarmSoundInfo | null): string | undefined => {
+            if (!soundInfo) {
+                return undefined;
+            }
+
+            if (soundInfo.kind === 'none') {
+                return t('intake_special_signal_sound_none');
+            }
+
+            if (soundInfo.kind === 'default') {
+                return t('intake_special_signal_sound_default');
+            }
+
+            return soundInfo.name?.trim() || t('intake_special_signal_sound_default');
+        },
+        [t],
+    );
+
     const handleSilenceModeToggle = useCallback((enabled: boolean) => {
         setIsSilenceMode(enabled);
         void setSilenceModeEnabled(enabled);
+    }, []);
+
+    const handleIntakeSpecialSignalToggle = useCallback((enabled: boolean) => {
+        setIsIntakeSpecialSignal(enabled);
+        void setIntakeSpecialSignalEnabled(enabled);
+        if (enabled) {
+            void loadIntakeSpecialSignalSoundInfo();
+        }
+    }, [loadIntakeSpecialSignalSoundInfo]);
+
+    const handleIntakeSpecialSignalSoundPress = useCallback(() => {
+        void (async () => {
+            await openIntakeSpecialSignalAlarmSoundSettings();
+        })();
     }, []);
 
     const handlePushNotificationsToggle = useCallback((enabled: boolean) => {
@@ -93,12 +158,68 @@ export const ProfileScreen = () => {
         })();
     }, []);
 
+    useEffect(() => {
+        if (isNotify) {
+            void loadIntakeSpecialSignalSetting();
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            setIsIntakeSpecialSignal(false);
+            setIntakeSpecialSignalSoundInfo(null);
+        }, 180);
+
+        return () => clearTimeout(timeout);
+    }, [isNotify, loadIntakeSpecialSignalSetting]);
+
+    useEffect(() => {
+        if (!isNotify || !isIntakeSpecialSignal || Platform.OS !== 'android') {
+            const timeout = setTimeout(() => {
+                setIntakeSpecialSignalSoundInfo(null);
+            }, 180);
+
+            return () => clearTimeout(timeout);
+        }
+
+        void loadIntakeSpecialSignalSoundInfo();
+    }, [isNotify, isIntakeSpecialSignal, loadIntakeSpecialSignalSoundInfo]);
+
     useFocusEffect(
         useCallback(() => {
             void loadProfileData();
             void loadSilenceModeSetting();
+            void loadIntakeSpecialSignalSetting();
+            void loadIntakeSpecialSignalSoundInfo();
             void refetchMealSchedule();
-        }, [loadProfileData, loadSilenceModeSetting, refetchMealSchedule]),
+
+            // Returning from Android system settings does not blur the screen,
+            // so refresh the selected alarm sound when the app becomes active again.
+            const appStateSubscription = AppState.addEventListener(
+                'change',
+                (nextState: AppStateStatus) => {
+                    if (nextState !== 'active' || Platform.OS !== 'android') {
+                        return;
+                    }
+
+                    InteractionManager.runAfterInteractions(() => {
+                        // Channel sound can lag slightly after Settings closes.
+                        setTimeout(() => {
+                            void loadIntakeSpecialSignalSoundInfo();
+                        }, 250);
+                    });
+                },
+            );
+
+            return () => {
+                appStateSubscription.remove();
+            };
+        }, [
+            loadProfileData,
+            loadSilenceModeSetting,
+            loadIntakeSpecialSignalSetting,
+            loadIntakeSpecialSignalSoundInfo,
+            refetchMealSchedule,
+        ]),
     );
 
     return (
@@ -106,7 +227,8 @@ export const ProfileScreen = () => {
             <ScrollView
                 style={styles.scroll}
                 contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}>
+                showsVerticalScrollIndicator={false}
+                removeClippedSubviews={false}>
                 <View style={styles.card}>
                     <LabelValueTouchableRightChevron
                         title={t('name_label')}
@@ -127,7 +249,10 @@ export const ProfileScreen = () => {
                 </View>
                 <ProfileStorageCard/>
                 {isMealSchedulePending ? <SkeletonProfileMealCard /> : <ProfileMealsCard />}
-                <View style={styles.card}>
+                <Animated.View
+                    collapsable={false}
+                    style={styles.card}
+                    layout={LAYOUT_TRANSITION}>
                     <SwitchLabelIconCard
                         icon="moon"
                         text={t('silence_mode')}
@@ -141,8 +266,38 @@ export const ProfileScreen = () => {
                         isActive={isNotify}
                         setIsActive={handlePushNotificationsToggle}
                     />
-                </View>
-                <View style={styles.card}>
+                    <Animated.View collapsable={false} layout={LAYOUT_TRANSITION}>
+                        {isNotify ? (
+                            <Animated.View
+                                collapsable={false}
+                                entering={FadeIn.duration(180)}
+                                exiting={FadeOut.duration(120)}>
+                                <View style={styles.divider}/>
+                                <SwitchLabelIconCard
+                                    icon="music"
+                                    text={t('intake_special_signal')}
+                                    isActive={isIntakeSpecialSignal}
+                                    setIsActive={handleIntakeSpecialSignalToggle}
+                                />
+                                {Platform.OS === 'android' && isIntakeSpecialSignal ? (
+                                    <Animated.View
+                                        collapsable={false}
+                                        entering={FadeIn.duration(180)}
+                                        exiting={FadeOut.duration(120)}>
+                                        <LabelValueTouchableRightChevron
+                                            title={t('intake_special_signal_sound')}
+                                            filledText={resolveIntakeSpecialSignalSoundLabel(
+                                                intakeSpecialSignalSoundInfo,
+                                            )}
+                                            onPress={handleIntakeSpecialSignalSoundPress}
+                                        />
+                                    </Animated.View>
+                                ) : null}
+                            </Animated.View>
+                        ) : null}
+                    </Animated.View>
+                </Animated.View>
+                <Animated.View collapsable={false} style={styles.card} layout={LAYOUT_TRANSITION}>
                     <TouchableLeftIconTextIsChevron
                         icon="lock-keyhole"
                         text={t('password')}
@@ -170,9 +325,11 @@ export const ProfileScreen = () => {
                             });
                         }}
                     />
-                </View>
-                <ProfileLanguageChandeCard text={t('language_label')}/>
-                <View style={styles.card}>
+                </Animated.View>
+                <Animated.View collapsable={false} layout={LAYOUT_TRANSITION}>
+                    <ProfileLanguageChandeCard text={t('language_label')}/>
+                </Animated.View>
+                <Animated.View collapsable={false} style={styles.card} layout={LAYOUT_TRANSITION}>
                     <TouchableLeftIconTextIsChevron
                         icon="log-out"
                         text={t('logout')}
@@ -181,16 +338,17 @@ export const ProfileScreen = () => {
                         }}
                         isChevron={false}
                     />
-                </View>
-                <TouchableTextIsIcon
-                    text={t('delete_account')}
-                    icon="trash-2"
-                    textColor="rgba(255, 102, 102, 1)"
-                    onPress={() => {
-                        deleteAccountModalRef.current?.present();
-                    }}
-                    styleContainer={styles.deleteButton}
-                />
+                </Animated.View>
+                <Animated.View collapsable={false} layout={LAYOUT_TRANSITION} style={styles.deleteButton}>
+                    <TouchableTextIsIcon
+                        text={t('delete_account')}
+                        icon="trash-2"
+                        textColor="rgba(255, 102, 102, 1)"
+                        onPress={() => {
+                            deleteAccountModalRef.current?.present();
+                        }}
+                    />
+                </Animated.View>
             </ScrollView>
 
             <ProfileNameChangeModal

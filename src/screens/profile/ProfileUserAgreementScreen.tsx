@@ -14,75 +14,112 @@ import {TouchableTextIsIcon} from '../../shared/ui/TouchableTextIsIcon.tsx';
 import {ProfileUserAgreementModal} from '../../widgets/profileScreens/ProfileUserAgreementModal.tsx';
 
 const TOC_ITEMS = [
-    '1. Общие положения',
-    '2. Использование Приложения',
-    '3. Персональные и медицинские данные',
-    '4. Права и обязанности пользователя',
-    '5. Права и обязанности оператора',
-    '6. Ограничение ответственности',
-    '7. Заключительные положения',
+    '1. Overview',
+    '2. Information We Collect',
+    '3. How We Use Information',
+    '4. Data Storage',
+    '5. Data Sharing',
+    '6. Data Protection',
+    '7. User Rights',
+    '8. Children\'s Privacy',
+    '9. Medical Disclaimer',
+    '10. Changes to This Privacy Policy',
+    '11. Contact',
 ] as const;
 
-const AGREEMENT_INTRO =
-    'Настоящее Пользовательское соглашение (далее — "Соглашение") регулирует использование мобильного приложения «ProfMed» (далее — "Приложение") и является публичной офертой для пользователей Приложения.';
+const AGREEMENT_INTRO = [
+    'Pills Tracker ("the App") is owned and operated by:',
+    'LLC "Neoproxima"',
+    'Identification number: 400469587',
+    'Legal address: Georgia, Tbilisi, Gldani district, Niko Ketskhoveli street 16, floor 10, apartment 58, 0167',
+    'Contact email: hello@neoproxima.pro',
+];
 
 const AGREEMENT_SECTIONS: { title: string; paragraphs: string[] }[] = [
     {
-        title: '1. Общие положения',
+        title: '1. Overview',
         paragraphs: [
-            '1.1. Используя Приложение, вы подтверждаете, что ознакомились с условиями настоящего Соглашения, Политикой конфиденциальности и Согласием на обработку персональных данных, и принимаете их полностью.',
-            '1.2. Оператором персональных данных и владельцем Приложения является ООО "ПрофМед" (ИНН 1234567890, ОГРН 1234567890123, адрес: г. Москва, ул. Примерная, д. 1).',
+            'Pills Tracker is designed to help users manage medication intake, create schedules, receive reminders, and keep health-related notes for personal use.',
+            'By using the App, you agree to this Privacy Policy.',
         ],
     },
     {
-        title: '2. Использование Приложения',
+        title: '2. Information We Collect',
         paragraphs: [
-            '2.1. Приложение предоставляет возможность вести медицинские записи, хранить результаты анализов, получать напоминания о приёме лекарств, отслеживать медицинские события и использовать иные сервисы, указанные в приложении.',
-            '2.2. Для полноценного использования приложения необходимо зарегистрироваться и предоставить корректные персональные данные.',
+            'Depending on how you use the App, we may collect and process:',
+            'account information, such as name, email address, and login details;',
+            'health-related information entered by the user, such as medication names, dosage schedules, intake times, meal-related instructions, reminders, and notes;',
+            'technical information, such as device type, app version, operating system, and diagnostic data;',
+            'notification-related data required to send reminders and service notifications.',
         ],
     },
     {
-        title: '3. Персональные и медицинские данные',
+        title: '3. How We Use Information',
         paragraphs: [
-            '3.1. При регистрации и использовании Приложения вы соглашаетесь на передачу, обработку и хранение ваших персональных и медицинских данных на серверах, расположенных на территории Российской Федерации.',
-            '3.2. Оператор обязуется соблюдать требования законодательства РФ по защите персональных данных.',
-            '3.3. Вы имеете право в любое время отозвать своё согласие на обработку персональных данных, обратившись по указанным в приложении контактам.',
+            'We use information only to:',
+            'provide and maintain the App\'s functionality;',
+            'create and manage medication reminders and schedules;',
+            'store and display user-entered health-related information;',
+            'improve the stability, security, and performance of the App;',
+            'provide support and respond to user requests.',
         ],
     },
     {
-        title: '4. Права и обязанности пользователя',
+        title: '4. Data Storage',
         paragraphs: [
-            '4.1. Пользователь обязуется указывать достоверную информацию, не использовать приложение в противозаконных целях и не совершать действий, нарушающих права третьих лиц.',
-            '4.2. Пользователь несёт ответственность за сохранность данных своей учётной записи, включая пароль и ПИН-код.',
-            '4.3. Пользователь вправе удалять свой аккаунт и данные из приложения.',
+            'Personal and health-related data may be stored and processed on the user\'s device and on secure servers used for the operation of the App.',
         ],
     },
     {
-        title: '5. Права и обязанности оператора',
+        title: '5. Data Sharing',
         paragraphs: [
-            '5.1. Оператор вправе изменять функционал приложения, условия использования и настоящее Соглашение с обязательной публикацией новой редакции.',
-            '5.2. Оператор имеет право направлять пользователю уведомления, связанные с использованием приложения, сервисными, медицинскими или юридическими событиями.',
-            '5.3. Оператор не несёт ответственности за достоверность и актуальность медицинских данных, внесённых пользователем.',
+            'We do not sell, rent, or transfer personal data to third parties.',
+            'We may disclose information only if required by applicable law or a lawful request from a competent authority.',
         ],
     },
     {
-        title: '6. Ограничение ответственности',
+        title: '6. Data Protection',
         paragraphs: [
-            '6.1. Приложение не является медицинским учреждением и не осуществляет медицинскую деятельность, рекомендации носят информационный характер и не заменяют консультацию врача.',
-            '6.2. Оператор не гарантирует бесперебойную работу приложения и не несёт ответственности за возможные сбои, связанные с техническими причинами.',
+            'We take reasonable technical and organizational measures to protect personal data against unauthorized access, loss, misuse, alteration, or disclosure.',
         ],
     },
     {
-        title: '7. Заключительные положения',
+        title: '7. User Rights',
         paragraphs: [
-            '7.1. Настоящее соглашение вступает в силу с момента начала использования приложения.',
-            '7.2. Все споры, возникающие из данного соглашения, разрешаются в соответствии с законодательством Российской Федерации.',
-            '7.3. Контакты для обращений: support@profmed.ru',
+            'Users may request access to, correction of, or deletion of their personal data, as well as withdraw consent to data processing where applicable.',
+            'To make such a request, please contact: hello@neoproxima.pro',
+        ],
+    },
+    {
+        title: '8. Children\'s Privacy',
+        paragraphs: [
+            'The App does not have a specific age restriction. Where required by applicable law, use of the App by children must be supervised or authorized by a parent or legal guardian.',
+            'If we become aware that personal data was collected in violation of applicable law, we will take reasonable steps to delete it.',
+        ],
+    },
+    {
+        title: '9. Medical Disclaimer',
+        paragraphs: [
+            'Pills Tracker is not a medical provider and does not replace professional medical advice, diagnosis, or treatment.',
+            'The App is intended only as a tool for organizing medication intake and reminders. Users are responsible for following the advice of their healthcare professionals.',
+        ],
+    },
+    {
+        title: '10. Changes to This Privacy Policy',
+        paragraphs: [
+            'We may update this Privacy Policy from time to time. The updated version will become effective once published in the App or otherwise made available to users.',
+        ],
+    },
+    {
+        title: '11. Contact',
+        paragraphs: [
+            'If you have any questions about this Privacy Policy, please contact:',
+            'hello@neoproxima.pro',
         ],
     },
 ];
 
-const AGREEMENT_UPDATED = 'Обновлено: 12 июня 2024 г.';
+const AGREEMENT_EFFECTIVE_DATE = 'Effective date: June 12, 2026';
 
 const INFO_CARD_WEIGHT_TEXT = 'Вы подтвердили своё согласие с пользовательским соглашением';
 const INFO_CARD_TEXT = 'Отзыв согласия приведёт к невозможности работы приложения';
@@ -124,7 +161,9 @@ export const ProfileUserAgreementScreen = (_props: ProfileUserAgreementScreenPro
                 style={styles.scroll}
                 contentContainerStyle={[styles.scrollContent, {paddingBottom: insets.bottom + 16}]}
                 showsVerticalScrollIndicator={false}>
-                <Text style={styles.label}>Пользовательское соглашение</Text>
+                <Text style={styles.label}>Privacy Policy</Text>
+                <Text style={styles.subtitle}>Pills Tracker</Text>
+                <Text style={styles.bodyText}>{AGREEMENT_EFFECTIVE_DATE}</Text>
 
                 <View style={styles.tocBlock}>
                     {TOC_ITEMS.map((item, index) => (
@@ -139,7 +178,11 @@ export const ProfileUserAgreementScreen = (_props: ProfileUserAgreementScreenPro
                     ))}
                 </View>
 
-                <Text style={styles.bodyText}>{AGREEMENT_INTRO}</Text>
+                {AGREEMENT_INTRO.map(paragraph => (
+                    <Text key={paragraph} style={styles.bodyText}>
+                        {paragraph}
+                    </Text>
+                ))}
 
                 {AGREEMENT_SECTIONS.map((section, sectionIndex) => (
                     <View
@@ -155,8 +198,6 @@ export const ProfileUserAgreementScreen = (_props: ProfileUserAgreementScreenPro
                         ))}
                     </View>
                 ))}
-
-                <Text style={styles.bodyText}>{AGREEMENT_UPDATED}</Text>
 
                 <InfoCard
                     weightText={INFO_CARD_WEIGHT_TEXT}
@@ -190,7 +231,14 @@ const styles = StyleSheet.create({
         fontWeight: 700,
         fontSize: 20,
         color: 'rgba(29, 26, 73, 1)',
-        marginTop: 12
+        marginTop: 12,
+    },
+    subtitle: {
+        fontWeight: 700,
+        fontSize: 16,
+        color: 'rgba(29, 26, 73, 1)',
+        marginTop: 8,
+        marginBottom: 12,
     },
     tocBlock: {
         marginTop: 24,

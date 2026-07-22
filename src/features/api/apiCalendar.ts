@@ -3,7 +3,14 @@ import {API_BASE} from '@env';
 import type {PrescriptionBackgroundImageDto} from './drugs/apiDrugs.ts';
 import {apiClient} from './client.ts';
 
-export type CalendarEventStatus = 'SCHEDULED' | 'COMPLETED' | 'MISSED';
+export type CalendarEventStatus =
+  | 'SCHEDULED'
+  | 'COMPLETED'
+  | 'MISSED'
+  | 'CANCELLED';
+
+/** Statuses the UI is allowed to set manually via the intake status API. */
+export type ManualCalendarEventStatus = 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
 
 export type CalendarMedicationIntakeEventDto = {
   type: 'medication_intake';

@@ -22,8 +22,13 @@ export const formatThroughUntilIntake = (
   }
 
   const totalSeconds = Math.ceil(remainingMs / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  let hours = Math.floor(totalSeconds / 3600);
+  let minutes = Math.floor((totalSeconds % 3600) / 60) + 1;
+
+  if (minutes >= 60) {
+    hours += Math.floor(minutes / 60);
+    minutes %= 60;
+  }
 
   if (hours === 0) {
     return t('notifications.inMinutes', {count: minutes});

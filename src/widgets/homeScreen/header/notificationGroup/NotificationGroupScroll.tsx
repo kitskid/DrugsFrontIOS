@@ -94,7 +94,7 @@ export const NotificationGroupScroll = ({reminders}: NotificationGroupScrollProp
         ]}>
         {reminders.map((reminder, index) => (
           <View
-            key={reminder.snapshotKey}
+            key={reminder.id}
             style={[
               styles.cardSlot,
               {

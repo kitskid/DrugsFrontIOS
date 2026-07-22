@@ -2,7 +2,6 @@ import type {PrescriptionBackgroundImageDto} from '../../../../features/api/drug
 
 export type NotificationReminder = {
   id: string;
-  snapshotKey: string;
   medicationName: string;
   scheduledAt: string;
   backgroundImage: PrescriptionBackgroundImageDto;

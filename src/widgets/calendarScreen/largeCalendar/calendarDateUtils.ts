@@ -4,7 +4,9 @@ export const WEEK_LENGTH = 7;
 
 export const LARGE_CALENDAR_HEADER_HEIGHT = 48;
 export const LARGE_CALENDAR_WEEKDAYS_HEIGHT = 40;
-export const LARGE_CALENDAR_BOTTOM_HANDLE_HEIGHT = 24;
+/** marginTop 12 + paddingVertical 16 + handle 4 + marginBottom 8 */
+export const LARGE_CALENDAR_BOTTOM_HANDLE_HEIGHT = 40;
+export const LARGE_CALENDAR_ROOT_PADDING_TOP = 12;
 
 export type CalendarDayCell = {
   date: Date;
@@ -51,6 +53,7 @@ export const getLargeCalendarHeights = (
   const contentWidth = getLargeCalendarContentWidth(layoutWidth);
   const daySize = getLargeCalendarDaySize(contentWidth);
   const chrome =
+    LARGE_CALENDAR_ROOT_PADDING_TOP +
     LARGE_CALENDAR_HEADER_HEIGHT +
     LARGE_CALENDAR_WEEKDAYS_HEIGHT +
     LARGE_CALENDAR_BOTTOM_HANDLE_HEIGHT;

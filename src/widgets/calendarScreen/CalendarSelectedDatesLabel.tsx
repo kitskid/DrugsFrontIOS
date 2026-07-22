@@ -57,7 +57,8 @@ export const CalendarSelectedDatesLabel = ({
 
 const styles = StyleSheet.create({
   text: {
-    marginVertical: 16,
+    marginTop: 0,
+    marginBottom: 16,
     textAlign: 'center',
     fontWeight: '500',
     fontSize: 18,

@@ -13,10 +13,14 @@ type CalendarCardProps = {
 
 const CALENDAR_EVENT_STATUS_PRESENTATION: Record<
   CalendarEventStatus,
-  {labelKey: 'scheduled' | 'completed' | 'missed'; color: string}
+  {labelKey: 'scheduled' | 'completed' | 'missed' | 'cancelled'; color: string}
 > = {
   MISSED: {
     labelKey: 'missed',
+    color: 'rgba(245, 33, 33, 1)',
+  },
+  CANCELLED: {
+    labelKey: 'cancelled',
     color: 'rgba(245, 33, 33, 1)',
   },
   COMPLETED: {

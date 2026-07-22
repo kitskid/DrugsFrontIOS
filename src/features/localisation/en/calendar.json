@@ -43,7 +43,8 @@
   "intakeStatus": {
     "scheduled": "Scheduled",
     "completed": "Taken",
-    "missed": "Missed"
+    "missed": "Missed",
+    "cancelled": "Cancelled"
   },
   "statusChangeModal": {
     "title": "Status",
@@ -57,5 +58,15 @@
   "emptyState": {
     "title": "No medication intakes",
     "subtitle": "Select other dates or add intakes"
+  },
+  "alarmScreen": {
+    "badge": "Intake time",
+    "defaultTitle": "Reminder",
+    "defaultSubtitle": "Confirm your medication intake",
+    "actions": {
+      "accept": "Taken",
+      "reject": "Missed",
+      "details": "Details"
+    }
   }
 }

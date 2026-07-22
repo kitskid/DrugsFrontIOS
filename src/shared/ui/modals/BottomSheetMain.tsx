@@ -1,6 +1,12 @@
-import {forwardRef, type ReactNode} from 'react';
-import type {StyleProp, ViewStyle} from 'react-native';
-import {StyleSheet} from 'react-native';
+import {forwardRef, useEffect, useImperativeHandle, useRef, type ReactNode} from 'react';
+import {
+  BackHandler,
+  Keyboard,
+  Platform,
+  StyleSheet,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -35,22 +41,72 @@ export const BottomSheetMain = forwardRef<BottomSheetModal, BottomSheetMainProps
       enableFooterMarginAdjustment = false,
       hasFooter = false,
       scrollable = false,
+      onChange,
       ...props
     },
     ref,
   ) => {
     const insets = useSafeAreaInsets();
+    const sheetRef = useRef<BottomSheetModal>(null);
+    const isPresentedRef = useRef(false);
+    const backHandlerSubscriptionRef = useRef<{remove: () => void} | null>(null);
+
+    useImperativeHandle(ref, () => sheetRef.current as BottomSheetModal, []);
+
+    useEffect(() => {
+      return () => {
+        backHandlerSubscriptionRef.current?.remove();
+        backHandlerSubscriptionRef.current = null;
+      };
+    }, []);
+
+    const syncAndroidBackHandler = (isPresented: boolean) => {
+      if (Platform.OS !== 'android') {
+        return;
+      }
+
+      if (isPresented && !backHandlerSubscriptionRef.current) {
+        backHandlerSubscriptionRef.current = BackHandler.addEventListener(
+          'hardwareBackPress',
+          () => {
+            if (!isPresentedRef.current) {
+              return false;
+            }
+
+            if (Keyboard.isVisible()) {
+              Keyboard.dismiss();
+              return true;
+            }
+
+            sheetRef.current?.dismiss();
+            return true;
+          },
+        );
+        return;
+      }
+
+      if (!isPresented && backHandlerSubscriptionRef.current) {
+        backHandlerSubscriptionRef.current.remove();
+        backHandlerSubscriptionRef.current = null;
+      }
+    };
 
     return (
       <BottomSheetModal
-        ref={ref}
+        ref={sheetRef}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         handleIndicatorStyle={styles.handleIndicator}
         backgroundStyle={styles.background}
         {...props}
         enablePanDownToClose={props.enablePanDownToClose ?? true}
-        backdropComponent={props.backdropComponent ?? backdropComponent}>
+        backdropComponent={props.backdropComponent ?? backdropComponent}
+        onChange={(index, position, type) => {
+          const isPresented = index >= 0;
+          isPresentedRef.current = isPresented;
+          syncAndroidBackHandler(isPresented);
+          onChange?.(index, position, type);
+        }}>
         {scrollable ? (
           children
         ) : (

@@ -1,6 +1,7 @@
 import {useEffect} from 'react';
 import {Image, StyleSheet, Text, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useTranslation} from 'react-i18next';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -8,6 +9,9 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
+
+import i18n from '../../features/localisation/i18n';
+
 const TWO_PI = Math.PI * 2;
 const backgroundGradientStart = {x: 0, y: 1};
 const backgroundGradientEnd = {x: 1, y: 0};
@@ -18,6 +22,7 @@ type AuthStartHeroProps = {
 };
 
 export const AuthStartHero = ({topInset, name}: AuthStartHeroProps) => {
+  const {t} = useTranslation('auth', {i18n});
   const hasName = typeof name === 'string' && name.trim().length > 0;
   const leftBlobProgress = useSharedValue(0);
   const rightTopBlobProgress = useSharedValue(0);
@@ -113,7 +118,7 @@ export const AuthStartHero = ({topInset, name}: AuthStartHeroProps) => {
         <Image source={require('../../../assets/images/logoLargeOutline.png')} style={styles.logo} />
         {hasName ? (
           <View style={styles.nameContainer}>
-            <Text style={styles.nameText}>{`Здравствуйте, ${name?.trim()}`}</Text>
+            <Text style={styles.nameText}>{t('welcome.hello', {name: name?.trim()})}</Text>
           </View>
         ) : null}
       </View>

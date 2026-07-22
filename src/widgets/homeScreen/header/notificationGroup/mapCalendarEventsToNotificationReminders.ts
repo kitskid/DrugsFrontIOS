@@ -12,10 +12,6 @@ const isMedicationIntakeEvent = (
   event: CalendarEventDto,
 ): event is CalendarMedicationIntakeEventDto => event.type === 'medication_intake';
 
-export const buildNotificationReminderSnapshotKey = (
-  event: CalendarMedicationIntakeEventDto,
-): string => `${event.parentId?.trim() || event.scheduledTime}|${event.scheduledTime}`;
-
 export const getTodayCalendarEvents = (
   days: CalendarResponseDto['days'] | undefined,
 ): CalendarEventDto[] => {
@@ -28,18 +24,10 @@ export const getTodayCalendarEvents = (
 
 export const mapCalendarEventsToNotificationReminders = (
   events: CalendarEventDto[],
-  notBeforeMs?: number,
 ): NotificationReminder[] =>
   events
     .filter(isMedicationIntakeEvent)
     .filter(event => event.status !== 'COMPLETED')
-    .filter(event => {
-      if (notBeforeMs === undefined) {
-        return true;
-      }
-
-      return new Date(event.scheduledTime).getTime() >= notBeforeMs;
-    })
     .slice()
     .sort(
       (left, right) =>
@@ -47,7 +35,6 @@ export const mapCalendarEventsToNotificationReminders = (
     )
     .map(event => ({
       id: event.id,
-      snapshotKey: buildNotificationReminderSnapshotKey(event),
       medicationName: event.medicationName?.trim() || '—',
       scheduledAt: event.scheduledTime,
       backgroundImage: event.backgroundImage ?? DEFAULT_BACKGROUND_IMAGE,

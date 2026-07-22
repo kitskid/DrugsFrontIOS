@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
 
+import enAuth from './en/auth.json';
 import enCalendar from './en/calendar.json';
 import enDocuments from './en/documents.json';
 import enDrugsCreate from './en/drugsCreate.json';
@@ -9,6 +10,7 @@ import enHome from './en/home.json';
 import enNotifications from './en/notifications.json';
 import enProfile from './en/profile.json';
 import enTimePickers from './en/timePickers.json';
+import ruAuth from './ru/auth.json';
 import ruCalendar from './ru/calendar.json';
 import ruDocuments from './ru/documents.json';
 import ruDrugsCreate from './ru/drugsCreate.json';
@@ -21,6 +23,7 @@ export const APP_LANGUAGE_STORAGE_KEY = 'appLanguage';
 
 const resources = {
   en: {
+    auth: enAuth,
     drugsCreate: enDrugsCreate,
     calendar: enCalendar,
     documents: enDocuments,
@@ -30,6 +33,7 @@ const resources = {
     timePickers: enTimePickers,
   },
   ru: {
+    auth: ruAuth,
     drugsCreate: ruDrugsCreate,
     calendar: ruCalendar,
     documents: ruDocuments,

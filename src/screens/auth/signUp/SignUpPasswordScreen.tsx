@@ -4,6 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {useMutation} from "@tanstack/react-query";
+import {useTranslation} from 'react-i18next';
 import {PasswordInputWithCards} from "../../../shared/ui/PasswordInputWithCards.tsx";
 import {ButtonMain} from "../../../shared/ui/ButtonMain.tsx";
 import type {SignUpStackParamList} from '../../../features/navigation/auth/SignUpStack';
@@ -11,6 +12,7 @@ import {isPasswordValid} from "../../../shared/ui/PasswordInput.tsx";
 import {apiAuth} from "../../../features/api/apiAuth.ts";
 import axios from "axios";
 import {useToast} from "../../../features/toasts/useToast.ts";
+import i18n from "../../../features/localisation/i18n.ts";
 import type {AuthStackParamList} from "../../../features/navigation/auth/AuthStack.tsx";
 
 type SignUpPasswordScreenProps = NativeStackScreenProps<
@@ -19,6 +21,7 @@ type SignUpPasswordScreenProps = NativeStackScreenProps<
 >;
 
 export const SignUpPasswordScreen = ({navigation}: SignUpPasswordScreenProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const insets = useSafeAreaInsets();
     const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
     const [password, setPassword] = useState<string>('');
@@ -54,7 +57,7 @@ export const SignUpPasswordScreen = ({navigation}: SignUpPasswordScreenProps) =>
             navigation.replace('SignUpPasswordRepeat');
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 429) {
-                showToast({variant: 'error', text: 'Слишком много запросов, попробуйте позже'});
+                showToast({variant: 'error', text: t('common.too_many_requests')});
                 return;
             }
             setIsPasswordError(true);
@@ -74,7 +77,7 @@ export const SignUpPasswordScreen = ({navigation}: SignUpPasswordScreenProps) =>
                     style={styles.logo}
                 />
                 <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-                    <Text style={styles.title}>Создайте пароль</Text>
+                    <Text style={styles.title}>{t('sign_up.password_title')}</Text>
                     <PasswordInputWithCards
                         value={password}
                         onChange={handlePasswordChange}
@@ -92,14 +95,14 @@ export const SignUpPasswordScreen = ({navigation}: SignUpPasswordScreenProps) =>
                                         }
                                         navigation.goBack();
                                     }}
-                                    title={'Вернуться'}
+                                    title={t('common.back')}
                                     variant={'secondary'}
                                 />
                             </View>
                             <View style={styles.buttonWrapper}>
                                 <ButtonMain
                                     onPress={handleSubmit}
-                                    title={'Далее'}
+                                    title={t('common.next')}
                                     isLoading={isPasswordAgreementPending}
                                 />
                             </View>

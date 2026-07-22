@@ -7,6 +7,7 @@ import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-nav
 import {useMutation} from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import {useTranslation} from 'react-i18next';
 
 import {ButtonMain} from '../../../shared/ui/ButtonMain.tsx';
 import {InputMain} from '../../../shared/ui/InputMain.tsx';
@@ -15,6 +16,7 @@ import type {SignInStackParamList} from '../../../features/navigation/auth/SignI
 import type {AuthStackParamList} from '../../../features/navigation/auth/AuthStack.tsx';
 import {apiAuth} from '../../../features/api/apiAuth.ts';
 import {PASSWORD_RESET_SESSION_ID_HEADER} from '../../../features/api/index.ts';
+import i18n from '../../../features/localisation/i18n.ts';
 
 export const extractPasswordResetSessionId = (
     headers: RawAxiosResponseHeaders | AxiosResponseHeaders | undefined,
@@ -47,6 +49,7 @@ type PasswordResetEmailEnteringScreenProps = NativeStackScreenProps<
 >;
 
 export const PasswordResetEmailEnteringScreen = ({navigation}: PasswordResetEmailEnteringScreenProps) => {
+  const {t} = useTranslation('auth', {i18n});
   const insets = useSafeAreaInsets();
   const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
   const [email, setEmail] = useState<string>('');
@@ -65,7 +68,7 @@ export const PasswordResetEmailEnteringScreen = ({navigation}: PasswordResetEmai
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(normalizedEmail)) {
-      setEmailErrorText('Неверный формат E-mail');
+      setEmailErrorText(t('common.email_invalid'));
       return;
     }
 
@@ -78,7 +81,7 @@ export const PasswordResetEmailEnteringScreen = ({navigation}: PasswordResetEmai
       const passwordSessionId = extractPasswordResetSessionId(response.headers);
 
       if (!passwordSessionId) {
-        setEmailErrorText('Ошибка на сервере');
+        setEmailErrorText(t('common.server_error'));
         return;
       }
 
@@ -86,15 +89,15 @@ export const PasswordResetEmailEnteringScreen = ({navigation}: PasswordResetEmai
       navigation.replace('PasswordResetCode');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 429) {
-        setEmailErrorText('Слишком много запросов, попробуйте позже');
+        setEmailErrorText(t('common.too_many_requests'));
         return;
       }
       if (axios.isAxiosError(error) && error.response?.status === 404) {
-        setEmailErrorText('Пользователь с таким E-mail не найден');
+        setEmailErrorText(t('password_reset.user_not_found'));
         return;
       }
 
-      setEmailErrorText('Ошибка на сервере');
+      setEmailErrorText(t('common.server_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -110,11 +113,11 @@ export const PasswordResetEmailEnteringScreen = ({navigation}: PasswordResetEmai
       <View style={styles.inner}>
         <Image source={require('../../../../assets/images/logo.png')} style={styles.logo} />
         <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-          <Text style={styles.title}>Сброс пароля</Text>
+          <Text style={styles.title}>{t('password_reset.email_title')}</Text>
           <InputMain
             icon={'mail'}
-            label={'E-mail вашего аккаунта'}
-            placeholder={'name@example.com'}
+            label={t('password_reset.email_label')}
+            placeholder={t('common.email_placeholder')}
             value={email}
             onChange={value => {
               setEmail(value);
@@ -125,11 +128,7 @@ export const PasswordResetEmailEnteringScreen = ({navigation}: PasswordResetEmai
           />
           <View style={styles.infoCard}>
             <IconMapper icon={'info'} size={24} weight={1.5} color={'rgba(35, 142, 235, 1)'} />
-            <Text style={styles.infoCardText}>
-              На указанный E-mail будет отправлен код подтверждения.{'\n\n'}
-              Убедитесь, что адрес введен правильно.{'\n'}
-              Проверьте папку "Спам", если письмо не пришло.
-            </Text>
+            <Text style={styles.infoCardText}>{t('common.email_code_info')}</Text>
           </View>
           <View style={styles.footer}>
             <View style={styles.buttonsContainer}>
@@ -142,12 +141,12 @@ export const PasswordResetEmailEnteringScreen = ({navigation}: PasswordResetEmai
                     }
                     navigation.goBack();
                   }}
-                  title={'Вернуться'}
+                  title={t('common.back')}
                   variant={'secondary'}
                 />
               </View>
               <View style={styles.buttonWrapper}>
-                <ButtonMain onPress={handleSubmit} title={'Отправить код'} isLoading={isSubmitting} />
+                <ButtonMain onPress={handleSubmit} title={t('common.send_code')} isLoading={isSubmitting} />
               </View>
             </View>
           </View>

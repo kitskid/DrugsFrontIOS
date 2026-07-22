@@ -7,8 +7,10 @@ import type {SignUpStackParamList} from "../../../features/navigation/auth/SignU
 import {CodeEnterKeyboardInputs} from "../../../shared/ui/codeEnterKeyboardInputs/codeEnterKeyboardInputs.tsx";
 import {useEffect, useRef, useState} from "react";
 import {useMutation} from "@tanstack/react-query";
+import {useTranslation} from "react-i18next";
 import {apiAuth} from "../../../features/api/apiAuth.ts";
 import axios from "axios";
+import i18n from "../../../features/localisation/i18n.ts";
 import type {AuthStackParamList} from "../../../features/navigation/auth/AuthStack.tsx";
 import type {NativeStackNavigationProp} from "@react-navigation/native-stack";
 
@@ -18,6 +20,7 @@ type SignUpEmailConfirmScreenProps = NativeStackScreenProps<
 >;
 
 export const SignUpEmailConfirmScreen = ({navigation}: SignUpEmailConfirmScreenProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const insets = useSafeAreaInsets();
     const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
     const [code, setCode] = useState('');
@@ -46,7 +49,7 @@ export const SignUpEmailConfirmScreen = ({navigation}: SignUpEmailConfirmScreenP
 
     const handleConfirmPress = async () => {
         if (code.length < 5) {
-            setCodeErrorText('Поле обязательно для заполнения');
+            setCodeErrorText(t('common.field_required'));
             return;
         }
 
@@ -57,11 +60,11 @@ export const SignUpEmailConfirmScreen = ({navigation}: SignUpEmailConfirmScreenP
             navigation.replace('SignUpPassword');
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 401) {
-                setCodeErrorText('Неверный код');
+                setCodeErrorText(t('common.invalid_code'));
                 return;
             }
 
-            setCodeErrorText('Ошибка на сервере');
+            setCodeErrorText(t('common.server_error'));
         }
     };
 
@@ -78,7 +81,7 @@ export const SignUpEmailConfirmScreen = ({navigation}: SignUpEmailConfirmScreenP
                     style={styles.logo}
                 />
                 <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-                    <Text style={styles.title}>Подтвердите E-mail</Text>
+                    <Text style={styles.title}>{t('sign_up.confirm_email_title')}</Text>
                     <CodeEnterKeyboardInputs
                         onCodeChange={handleCodeChange}
                         onResendCodePress={async () => await resendEmailCodeMutation()}
@@ -95,14 +98,14 @@ export const SignUpEmailConfirmScreen = ({navigation}: SignUpEmailConfirmScreenP
                                         }
                                         navigation.goBack();
                                     }}
-                                    title={'Вернуться'}
+                                    title={t('common.back')}
                                     variant={'secondary'}
                                 />
                             </View>
                             <View style={styles.buttonWrapper}>
                                 <ButtonMain
                                     onPress={handleConfirmPress}
-                                    title={'Подтвердить'}
+                                    title={t('common.confirm')}
                                     isLoading={isConfirmPending}
                                 />
                             </View>

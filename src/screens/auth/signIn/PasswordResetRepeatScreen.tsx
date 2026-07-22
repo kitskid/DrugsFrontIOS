@@ -5,6 +5,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useMutation} from '@tanstack/react-query';
 import axios from 'axios';
+import {useTranslation} from 'react-i18next';
 
 import {ButtonMain} from '../../../shared/ui/ButtonMain.tsx';
 import {PasswordInput} from '../../../shared/ui/PasswordInput.tsx';
@@ -12,6 +13,7 @@ import type {SignInStackParamList} from '../../../features/navigation/auth/SignI
 import type {AuthStackParamList} from '../../../features/navigation/auth/AuthStack.tsx';
 import {useToast} from '../../../features/toasts/useToast.ts';
 import {apiAuth} from '../../../features/api/apiAuth.ts';
+import i18n from '../../../features/localisation/i18n.ts';
 
 type PasswordResetRepeatScreenProps = NativeStackScreenProps<
     SignInStackParamList,
@@ -19,6 +21,7 @@ type PasswordResetRepeatScreenProps = NativeStackScreenProps<
 >;
 
 export const PasswordResetRepeatScreen = ({navigation}: PasswordResetRepeatScreenProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const insets = useSafeAreaInsets();
     const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
     const [passwordRepeat, setPasswordRepeat] = useState('');
@@ -38,7 +41,7 @@ export const PasswordResetRepeatScreen = ({navigation}: PasswordResetRepeatScree
 
     const handleSubmit = async () => {
         if (passwordRepeat.trim().length === 0) {
-            setPasswordRepeatErrorText('Данное поле обязательно');
+            setPasswordRepeatErrorText(t('common.field_required_short'));
             return;
         }
 
@@ -47,19 +50,19 @@ export const PasswordResetRepeatScreen = ({navigation}: PasswordResetRepeatScree
         try {
             await passwordResetForgotResetRepeatMutation(passwordRepeat);
             navigation.replace('SignInLogin');
-            showToast({variant: 'success', text: 'Пароль успешно изменен'});
+            showToast({variant: 'success', text: t('password_reset.success')});
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 429) {
-                setPasswordRepeatErrorText('Слишком много запросов, попробуйте позже');
+                setPasswordRepeatErrorText(t('common.too_many_requests'));
                 return;
             }
 
             if (axios.isAxiosError(error) && error.response?.status === 400) {
-                setPasswordRepeatErrorText('Пароли не совпадают');
+                setPasswordRepeatErrorText(t('common.passwords_mismatch'));
                 return;
             }
 
-            setPasswordRepeatErrorText('Ошибка на сервере');
+            setPasswordRepeatErrorText(t('common.server_error'));
         }
     };
 
@@ -73,7 +76,7 @@ export const PasswordResetRepeatScreen = ({navigation}: PasswordResetRepeatScree
             <View style={styles.inner}>
                 <Image source={require('../../../../assets/images/logo.png')} style={styles.logo} />
                 <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-                    <Text style={styles.title}>Повторите пароль</Text>
+                    <Text style={styles.title}>{t('password_reset.repeat_title')}</Text>
                     <PasswordInput
                         value={passwordRepeat}
                         onChange={handlePasswordRepeatChange}
@@ -91,14 +94,14 @@ export const PasswordResetRepeatScreen = ({navigation}: PasswordResetRepeatScree
                                         }
                                         navigation.goBack();
                                     }}
-                                    title={'Вернуться'}
+                                    title={t('common.back')}
                                     variant={'secondary'}
                                 />
                             </View>
                             <View style={styles.buttonWrapper}>
                                 <ButtonMain
                                     onPress={handleSubmit}
-                                    title={'Далее'}
+                                    title={t('common.next')}
                                     isLoading={isSubmitting}
                                 />
                             </View>

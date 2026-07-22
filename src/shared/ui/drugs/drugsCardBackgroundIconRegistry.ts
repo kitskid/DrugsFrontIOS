@@ -449,6 +449,20 @@ import Form9Reverse1Color7GradientDirection0 from '../../../../assets/icons/drug
 import Form9Reverse1Color7GradientDirection1 from '../../../../assets/icons/drugsCardsBackground/form=9, reverse=1, color=7, gradientDirection=1.svg';
 import Form9Reverse1Color7GradientDirection2 from '../../../../assets/icons/drugsCardsBackground/form=9, reverse=1, color=7, gradientDirection=2.svg';
 import Form9Reverse1Color7GradientDirection3 from '../../../../assets/icons/drugsCardsBackground/form=9, reverse=1, color=7, gradientDirection=3.svg';
+import WhiteBgForm0Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=0, reverse=0.svg';
+import WhiteBgForm1Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=1, reverse=0.svg';
+import WhiteBgForm2Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=2, reverse=0.svg';
+import WhiteBgForm3Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=3, reverse=0.svg';
+import WhiteBgForm4Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=4, reverse=0.svg';
+import WhiteBgForm5Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=5, reverse=0.svg';
+import WhiteBgForm6Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=6, reverse=0.svg';
+import WhiteBgForm6Reverse1 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=6, reverse=1.svg';
+import WhiteBgForm7Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=7, reverse=0.svg';
+import WhiteBgForm7Reverse1 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=7, reverse=1.svg';
+import WhiteBgForm8Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=8, reverse=0.svg';
+import WhiteBgForm8Reverse1 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=8, reverse=1.svg';
+import WhiteBgForm9Reverse0 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=9, reverse=0.svg';
+import WhiteBgForm9Reverse1 from '../../../../assets/icons/drugsCardsBackground/white-bg/form=9, reverse=1.svg';
 
 export type DrugsCardBackgroundImage = {
   form: number;
@@ -942,6 +956,48 @@ export const getDrugsCardBackgroundIcon = (
   }
 
   return iconByBackgroundParams[buildBackgroundIconKey(DEFAULT_BACKGROUND_IMAGE)]!;
+};
+
+const whiteBackgroundIconByFormAndReverse: Record<string, BackgroundIconComponent> = {
+  'form=0, reverse=0': WhiteBgForm0Reverse0,
+  'form=1, reverse=0': WhiteBgForm1Reverse0,
+  'form=2, reverse=0': WhiteBgForm2Reverse0,
+  'form=3, reverse=0': WhiteBgForm3Reverse0,
+  'form=4, reverse=0': WhiteBgForm4Reverse0,
+  'form=5, reverse=0': WhiteBgForm5Reverse0,
+  'form=6, reverse=0': WhiteBgForm6Reverse0,
+  'form=6, reverse=1': WhiteBgForm6Reverse1,
+  'form=7, reverse=0': WhiteBgForm7Reverse0,
+  'form=7, reverse=1': WhiteBgForm7Reverse1,
+  'form=8, reverse=0': WhiteBgForm8Reverse0,
+  'form=8, reverse=1': WhiteBgForm8Reverse1,
+  'form=9, reverse=0': WhiteBgForm9Reverse0,
+  'form=9, reverse=1': WhiteBgForm9Reverse1,
+};
+
+const DEFAULT_WHITE_BACKGROUND_KEY = 'form=9, reverse=0';
+
+const buildWhiteBackgroundIconKey = (form: number, reverse: number): string =>
+  `form=${form}, reverse=${reverse}`;
+
+export const getDrugsCardWhiteBackgroundIcon = (
+  form: number,
+  reverse: number,
+): BackgroundIconComponent => {
+  const fallbackKeys = [
+    buildWhiteBackgroundIconKey(form, reverse),
+    buildWhiteBackgroundIconKey(form, 0),
+    DEFAULT_WHITE_BACKGROUND_KEY,
+  ];
+
+  for (const iconKey of fallbackKeys) {
+    const icon = whiteBackgroundIconByFormAndReverse[iconKey];
+    if (icon) {
+      return icon;
+    }
+  }
+
+  return whiteBackgroundIconByFormAndReverse[DEFAULT_WHITE_BACKGROUND_KEY]!;
 };
 
 export {DEFAULT_BACKGROUND_IMAGE};

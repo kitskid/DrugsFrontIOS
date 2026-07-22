@@ -14,6 +14,7 @@ import {useTranslation} from 'react-i18next';
 import {
     CALENDAR_QUERY_KEY,
     type CalendarEventStatus,
+    type ManualCalendarEventStatus,
 } from '../../../features/api/apiCalendar.ts';
 import {
     ACTIVE_MEDICATION_PRESCRIPTIONS_QUERY_KEY,
@@ -27,43 +28,79 @@ export type StatusChangeModalItem = {
     intakeId: string;
     prescriptionId: string | null;
     status: CalendarEventStatus;
+    scheduledTime: string;
 };
 
 type StatusChangeModalProps = {
     item: StatusChangeModalItem | null;
     showOpenProfileButton?: boolean;
     onOpenProfile?: (prescriptionId: string) => void;
-    onStatusUpdated?: (status: CalendarEventStatus) => void;
+    onStatusUpdated?: (status: ManualCalendarEventStatus) => void;
 };
 
 const STATUS_OPTION_KEYS: ReadonlyArray<{
-    status: CalendarEventStatus;
-    labelKey: 'scheduled' | 'completed' | 'missed';
+    status: ManualCalendarEventStatus;
+    labelKey: 'scheduled' | 'completed' | 'cancelled';
 }> = [
     {status: 'SCHEDULED', labelKey: 'scheduled'},
     {status: 'COMPLETED', labelKey: 'completed'},
-    {status: 'MISSED', labelKey: 'missed'},
+    {status: 'CANCELLED', labelKey: 'cancelled'},
 ];
+
+const isManualStatus = (
+    status: CalendarEventStatus,
+): status is ManualCalendarEventStatus =>
+    status === 'SCHEDULED' || status === 'COMPLETED' || status === 'CANCELLED';
+
+const canSetScheduled = (scheduledTime: string): boolean =>
+    new Date(scheduledTime).getTime() > Date.now();
+
+const resolveInitialSelectedStatus = (
+    item: StatusChangeModalItem,
+): ManualCalendarEventStatus => {
+    const allowScheduled = canSetScheduled(item.scheduledTime);
+
+    if (item.status === 'SCHEDULED' && allowScheduled) {
+        return 'SCHEDULED';
+    }
+
+    if (isManualStatus(item.status) && item.status !== 'SCHEDULED') {
+        return item.status;
+    }
+
+    return 'COMPLETED';
+};
+
+const getAvailableStatusOptions = (scheduledTime: string | undefined) => {
+    const allowScheduled =
+        scheduledTime !== undefined && canSetScheduled(scheduledTime);
+
+    return STATUS_OPTION_KEYS.filter(
+        option => option.status !== 'SCHEDULED' || allowScheduled,
+    );
+};
 
 export const StatusChangeModal = forwardRef<BottomSheetModal, StatusChangeModalProps>(
     ({item, showOpenProfileButton = false, onOpenProfile, onStatusUpdated}, ref) => {
         const {t} = useTranslation('calendar', {i18n});
         const sheetRef = useRef<BottomSheetModal>(null);
         const queryClient = useQueryClient();
-        const [selectedStatus, setSelectedStatus] = useState<CalendarEventStatus>(
-            item?.status ?? 'SCHEDULED',
+        const [selectedStatus, setSelectedStatus] = useState<ManualCalendarEventStatus>(
+            'COMPLETED',
         );
 
         useImperativeHandle(ref, () => sheetRef.current as BottomSheetModal, []);
 
+        const availableOptions = getAvailableStatusOptions(item?.scheduledTime);
+
         useEffect(() => {
             if (item) {
-                setSelectedStatus(item.status);
+                setSelectedStatus(resolveInitialSelectedStatus(item));
             }
         }, [item]);
 
         const {mutate: updateStatus, isPending} = useMutation({
-            mutationFn: (status: CalendarEventStatus) => {
+            mutationFn: (status: ManualCalendarEventStatus) => {
                 if (!item) {
                     return Promise.reject(new Error('No intake selected'));
                 }
@@ -100,7 +137,7 @@ export const StatusChangeModal = forwardRef<BottomSheetModal, StatusChangeModalP
                 <Text style={styles.title}>{t('statusChangeModal.title')}</Text>
 
                 <View style={styles.statusRow}>
-                    {STATUS_OPTION_KEYS.map(option => {
+                    {availableOptions.map(option => {
                         const isActive = option.status === selectedStatus;
 
                         return (
@@ -156,7 +193,7 @@ const styles = StyleSheet.create({
     statusRow: {
         marginTop: 20,
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
     },
     statusButton: {
         padding: 16,

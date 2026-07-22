@@ -5,6 +5,7 @@ import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-nav
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {useMutation} from "@tanstack/react-query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useTranslation} from 'react-i18next';
 import {ButtonMain} from "../../../shared/ui/ButtonMain.tsx";
 import type {SignUpStackParamList} from '../../../features/navigation/auth/SignUpStack';
 import {PasswordInput} from "../../../shared/ui/PasswordInput.tsx";
@@ -12,6 +13,7 @@ import {apiAuth} from "../../../features/api/apiAuth.ts";
 import {ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY} from "../../../features/api/index.ts";
 import axios from "axios";
 import {useToast} from "../../../features/toasts/useToast.ts";
+import i18n from "../../../features/localisation/i18n.ts";
 import type {AuthStackParamList} from "../../../features/navigation/auth/AuthStack.tsx";
 
 type SignUpPasswordRepeatScreenProps = NativeStackScreenProps<
@@ -20,6 +22,7 @@ type SignUpPasswordRepeatScreenProps = NativeStackScreenProps<
 >;
 
 export const SignUpPasswordRepeatScreen = ({navigation}: SignUpPasswordRepeatScreenProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const insets = useSafeAreaInsets();
     const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
     const [passwordRepeat, setPasswordRepeat] = useState<string>('');
@@ -40,7 +43,7 @@ export const SignUpPasswordRepeatScreen = ({navigation}: SignUpPasswordRepeatScr
 
     const handleSubmit = async () => {
         if (passwordRepeat.trim().length === 0) {
-            setPasswordRepeatErrorText('Данное поле обязательно');
+            setPasswordRepeatErrorText(t('common.field_required_short'));
             return;
         }
 
@@ -58,17 +61,17 @@ export const SignUpPasswordRepeatScreen = ({navigation}: SignUpPasswordRepeatScr
             }
 
             navigation.replace('SignUpName');
-            showToast({variant: 'success', text: 'Аккаунт успешно создан'});
+            showToast({variant: 'success', text: t('sign_up.account_created')});
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 429) {
-                setPasswordRepeatErrorText('Слишком много запросов, попробуйте позже');
+                setPasswordRepeatErrorText(t('common.too_many_requests'));
                 return;
             }
             if (axios.isAxiosError(error) && error.response?.status === 400) {
-                setPasswordRepeatErrorText('Пароли не совпадают');
+                setPasswordRepeatErrorText(t('common.passwords_mismatch'));
                 return;
             }
-            setPasswordRepeatErrorText('Ошибка на сервере');
+            setPasswordRepeatErrorText(t('common.server_error'));
         }
     };
 
@@ -85,7 +88,7 @@ export const SignUpPasswordRepeatScreen = ({navigation}: SignUpPasswordRepeatScr
                     style={styles.logo}
                 />
                 <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-                    <Text style={styles.title}>Повторите пароль</Text>
+                    <Text style={styles.title}>{t('sign_up.repeat_title')}</Text>
                     <PasswordInput
                         value={passwordRepeat}
                         onChange={handlePasswordRepeatChange}
@@ -103,14 +106,14 @@ export const SignUpPasswordRepeatScreen = ({navigation}: SignUpPasswordRepeatScr
                                         }
                                         navigation.goBack();
                                     }}
-                                    title={'Вернуться'}
+                                    title={t('common.back')}
                                     variant={'secondary'}
                                 />
                             </View>
                             <View style={styles.buttonWrapper}>
                                 <ButtonMain
                                     onPress={handleSubmit}
-                                    title={'Далее'}
+                                    title={t('common.next')}
                                     isLoading={isPasswordRepeatPending}
                                 />
                             </View>

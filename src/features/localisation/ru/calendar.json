@@ -43,7 +43,8 @@
   "intakeStatus": {
     "scheduled": "Планируется",
     "completed": "Принято",
-    "missed": "Пропущено"
+    "missed": "Пропущено",
+    "cancelled": "Отменено"
   },
   "statusChangeModal": {
     "title": "Статус",
@@ -58,5 +59,15 @@
   "emptyState": {
     "title": "Нет приёмов лекарств",
     "subtitle": "Выберите другие даты или добавьте приёмы"
+  },
+  "alarmScreen": {
+    "badge": "Время приёма",
+    "defaultTitle": "Напоминание",
+    "defaultSubtitle": "Подтвердите приём лекарства",
+    "actions": {
+      "accept": "Принято",
+      "reject": "Пропущено",
+      "details": "Подробнее"
+    }
   }
 }

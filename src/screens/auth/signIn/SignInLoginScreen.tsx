@@ -8,8 +8,10 @@ import {useState} from "react";
 import {useMutation} from "@tanstack/react-query";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from "axios";
+import {useTranslation} from "react-i18next";
 import {apiAuth} from "../../../features/api/apiAuth.ts";
 import {ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY} from "../../../features/api/index.ts";
+import i18n from "../../../features/localisation/i18n.ts";
 import {triggerAuthSyncWithWelcome} from "../../../app/useAuth.ts";
 import {useToast} from "../../../features/toasts/useToast.ts";
 import {InputMain} from "../../../shared/ui/InputMain.tsx";
@@ -22,6 +24,7 @@ type SignInLoginScreenProps = NativeStackScreenProps<
 >;
 
 export const SignInLoginScreen = ({navigation}: SignInLoginScreenProps) => {
+    const {t} = useTranslation('auth', {i18n});
     const insets = useSafeAreaInsets();
     const [email, setEmail] = useState<string>('')
     const [password, setPassword] = useState<string>('')
@@ -43,14 +46,14 @@ export const SignInLoginScreen = ({navigation}: SignInLoginScreenProps) => {
         const trimmedEmail = email.trim();
 
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
-            setEmailErrorText('Неверный формат E-mail');
+            setEmailErrorText(t('common.email_invalid'));
             hasError = true;
         } else {
             setEmailErrorText(null);
         }
 
         if (!isPasswordValid(password)) {
-            setPasswordErrorText('Неверный формат пароля');
+            setPasswordErrorText(t('sign_in.password_invalid'));
             hasError = true;
         } else {
             setPasswordErrorText(null);
@@ -77,11 +80,11 @@ export const SignInLoginScreen = ({navigation}: SignInLoginScreenProps) => {
             triggerAuthSyncWithWelcome();
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 401) {
-                showToast({variant: 'error', text: 'Неверный E-mail или пароль'});
+                showToast({variant: 'error', text: t('sign_in.invalid_credentials')});
                 return;
             }
 
-            showToast({variant: 'error', text: 'Ошибка на сервере'});
+            showToast({variant: 'error', text: t('common.server_error')});
         } finally {
             setIsSubmitting(false);
         }
@@ -100,8 +103,8 @@ export const SignInLoginScreen = ({navigation}: SignInLoginScreenProps) => {
                     style={styles.logo}
                 />
                 <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-                    <Text style={styles.title}>Войдите в аккаунт</Text>
-                    <InputMain icon={'mail'} label={'E-mail'} autoFocus placeholder={'name@example.com'} value={email}
+                    <Text style={styles.title}>{t('sign_in.title')}</Text>
+                    <InputMain icon={'mail'} label={t('common.email_label')} autoFocus placeholder={t('common.email_placeholder')} value={email}
                                onChange={value => {
                                    setEmail(value);
                                    setEmailErrorText(null);
@@ -113,12 +116,12 @@ export const SignInLoginScreen = ({navigation}: SignInLoginScreenProps) => {
                                        setPasswordErrorText(null);
                                    }}
                                    errorText={passwordErrorText}
-                                   label={'Пароль'}
-                                   placeholder={'Введите пароль'} style={styles.password}/>
+                                   label={t('common.password_label')}
+                                   placeholder={t('common.password_placeholder')} style={styles.password}/>
                     <TouchableTextIsIcon
                         styleContainer={styles.forgotPasswordContainer}
                         styleText={styles.forgotPasswordText}
-                        text={'Забыли пароль?'}
+                        text={t('sign_in.forgot_password')}
                         onPress={() => {
                             navigation.navigate('PasswordResetEmailEntering');
                         }}
@@ -130,14 +133,14 @@ export const SignInLoginScreen = ({navigation}: SignInLoginScreenProps) => {
                                     onPress={() => {
                                         navigation.goBack();
                                     }}
-                                    title={'Вернуться'}
+                                    title={t('common.back')}
                                     variant={'secondary'}
                                 />
                             </View>
                             <View style={styles.buttonWrapper}>
                                 <ButtonMain
                                     onPress={handleSubmit}
-                                    title={'Войти'}
+                                    title={t('sign_in.submit')}
                                     isLoading={isSubmitting}
                                 />
                             </View>

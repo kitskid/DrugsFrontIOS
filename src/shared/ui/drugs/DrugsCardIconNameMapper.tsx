@@ -4,6 +4,7 @@ import FolderIcon from '../../../../assets/icons/folder.svg';
 import {
   type DrugsCardBackgroundImage,
   getDrugsCardBackgroundIcon,
+  getDrugsCardWhiteBackgroundIcon,
 } from './drugsCardBackgroundIconRegistry.ts';
 
 export type DrugsCardIconSize = 48 | 36 | 28;
@@ -19,6 +20,7 @@ type DrugsCardIconNameMapperProps = {
   medicationName: string;
   size?: DrugsCardIconSize;
   isFolder?: boolean;
+  isWhiteBG?: boolean;
 };
 
 const FOLDER_CONTAINER_SIZE = 48;
@@ -42,9 +44,13 @@ export const DrugsCardIconNameMapper = ({
   medicationName,
   size = 36,
   isFolder = false,
+  isWhiteBG = false,
 }: DrugsCardIconNameMapperProps) => {
-  const {color} = backgroundImage;
+  const {color, form, reverse} = backgroundImage;
   const IconComponent = getDrugsCardBackgroundIcon(backgroundImage);
+  const WhiteBackgroundComponent = isWhiteBG
+    ? getDrugsCardWhiteBackgroundIcon(form, reverse)
+    : null;
   const textColor =
     TEXT_COLOR_BY_BACKGROUND_COLOR[color] ?? TEXT_COLOR_BY_BACKGROUND_COLOR[0];
   const drugNameInitials = medicationName.trim().slice(0, 2).toUpperCase() || '--';
@@ -53,10 +59,23 @@ export const DrugsCardIconNameMapper = ({
 
   const drugIcon = (
     <View style={[styles.container, {width: iconSize, height: iconSize}]}>
-      <IconComponent width={iconSize} height={iconSize} />
-      <Text style={[styles.text, {color: textColor, fontSize: textSize}]}>
-        {drugNameInitials}
-      </Text>
+      {WhiteBackgroundComponent ? (
+        <WhiteBackgroundComponent
+          width={iconSize}
+          height={iconSize}
+          style={[styles.layer, styles.whiteBackgroundLayer]}
+        />
+      ) : null}
+      <IconComponent
+        width={iconSize}
+        height={iconSize}
+        style={[styles.layer, styles.iconLayer]}
+      />
+      <View style={[styles.layer, styles.textLayer]} pointerEvents="none">
+        <Text style={[styles.text, {color: textColor, fontSize: textSize}]}>
+          {drugNameInitials}
+        </Text>
+      </View>
     </View>
   );
 
@@ -93,14 +112,29 @@ const styles = StyleSheet.create({
     right: 0,
   },
   container: {
+    position: 'relative',
+  },
+  layer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
   },
+  whiteBackgroundLayer: {
+    zIndex: 0,
+  },
+  iconLayer: {
+    zIndex: 1,
+  },
+  textLayer: {
+    zIndex: 2,
+  },
   text: {
-    position: 'absolute',
     textAlign: 'center',
     fontWeight: '700',
-    fontSize: 12,
     textTransform: 'uppercase',
   },
 });

@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import type {LayoutChangeEvent} from 'react-native';
 import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 import Animated, {
@@ -11,12 +11,12 @@ import Animated, {
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
+  type SharedValue,
 } from 'react-native-reanimated';
 import {useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {useQuery} from '@tanstack/react-query';
 import {useTranslation} from 'react-i18next';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 
 import {apiCalendar, CALENDAR_QUERY_KEY} from '../../features/api/apiCalendar.ts';
@@ -72,6 +72,70 @@ type DrugsCreateCalendarTabProps = {
   onOpenIntakeHandled?: () => void;
 };
 
+type IntakesListHeaderProps = {
+  expandedCalendarHeight: SharedValue<number>;
+  startDate: Date | null;
+  endDate: Date | null;
+  isEmptyState: boolean;
+  isLoading: boolean;
+  isError: boolean;
+  emptyTitle: string;
+  emptySubtitle: string;
+  loadError: string;
+};
+
+const IntakesListHeader = memo(
+  ({
+    expandedCalendarHeight,
+    startDate,
+    endDate,
+    isEmptyState,
+    isLoading,
+    isError,
+    emptyTitle,
+    emptySubtitle,
+    loadError,
+  }: IntakesListHeaderProps) => {
+    const spacerAnimatedStyle = useAnimatedStyle(() => ({
+      height:
+        expandedCalendarHeight.value +
+        CALENDAR_BOTTOM_GAP +
+        CALENDAR_TOP_MARGIN,
+    }));
+
+    return (
+      <>
+        <Animated.View style={spacerAnimatedStyle} />
+        <CalendarSelectedDatesLabel startDate={startDate} endDate={endDate} />
+        {isEmptyState ? (
+          <View style={styles.emptyContainer}>
+            <IconMapper
+              icon="calendar-search"
+              size={64}
+              color="rgba(199, 198, 217, 1)"
+              weight={1}
+            />
+            <Text style={styles.emptyTitle}>{emptyTitle}</Text>
+            <Text style={styles.emptySubtitle}>{emptySubtitle}</Text>
+          </View>
+        ) : null}
+        {isLoading ? (
+          <View>
+            {SKELETON_CARD_GROUPS.map(slot => (
+              <SkeletonCards key={slot} />
+            ))}
+          </View>
+        ) : null}
+        {!isLoading && isError ? (
+          <Text style={styles.errorText}>{loadError}</Text>
+        ) : null}
+      </>
+    );
+  },
+);
+
+IntakesListHeader.displayName = 'IntakesListHeader';
+
 export const DrugsCreateCalendarTab = ({
   prescriptionId,
   startDateIso,
@@ -84,11 +148,8 @@ export const DrugsCreateCalendarTab = ({
 }: DrugsCreateCalendarTabProps) => {
   const {t} = useTranslation('calendar', {i18n});
   const navigation = useNavigation<DrugsCreateCalendarTabNavigation>();
-  const insets = useSafeAreaInsets();
   const {width: windowWidth} = useWindowDimensions();
 
-  // First and last day of the course, computed from the prescription's startDate
-  // and durationDays (durationDays is always >= 1).
   const firstDay = useMemo(() => startOfDay(new Date(startDateIso)), [startDateIso]);
   const lastDay = useMemo(
     () => new Date(firstDay.getTime() + Math.max(0, durationDays - 1) * DAY_MS),
@@ -106,8 +167,6 @@ export const DrugsCreateCalendarTab = ({
   const [startDate, setStartDate] = useState<Date | null>(firstDay);
   const [endDate, setEndDate] = useState<Date | null>(lastDay);
 
-  // Single request for the whole course range, filtered by the medication name.
-  // Both the day dots and the list below are derived from it on the client.
   const {data, isLoading, isError} = useQuery({
     queryKey: [
       ...CALENDAR_QUERY_KEY,
@@ -128,9 +187,6 @@ export const DrugsCreateCalendarTab = ({
   const anchorMonth = hasPickedMonth ? initialMonth! : firstDay.getMonth();
   const anchorYear = hasPickedMonth ? initialYear! : firstDay.getFullYear();
 
-  // Initially the collapsed view centers on the course start day. After the user
-  // picks a month/year, it centers on the first day of that month and stays
-  // there instead of snapping back to the selected range.
   const collapseFocusDate = useMemo(
     () => (hasPickedMonth ? new Date(anchorYear, anchorMonth, 1) : firstDay),
     [hasPickedMonth, anchorMonth, anchorYear, firstDay],
@@ -143,8 +199,10 @@ export const DrugsCreateCalendarTab = ({
   const collapseDistance =
     initialCalendarHeights.expanded - initialCalendarHeights.collapsed;
 
-  // Start collapsed: seed the scroll position with the collapse distance.
-  const scrollY = useSharedValue<number>(collapseDistance > 0 ? collapseDistance : 0);
+  const scrollY = useSharedValue<number>(
+    collapseDistance > 0 ? collapseDistance : 0,
+  );
+  const initialCollapsePending = useSharedValue<number>(collapseDistance > 0 ? 1 : 0);
   const expandedCalendarHeight = useSharedValue<number>(
     initialCalendarHeights.expanded,
   );
@@ -157,13 +215,29 @@ export const DrugsCreateCalendarTab = ({
   const viewportHeightRef = useRef<number>(0);
   const [naturalContentHeight, setNaturalContentHeight] = useState<number>(0);
   const appliedBottomPaddingRef = useRef<number>(SCROLL_BOTTOM_PADDING);
-  const initialCollapseDoneRef = useRef<boolean>(false);
+  const initialCollapseDoneRef = useRef<boolean>(collapseDistance <= 0);
 
   const handleScrollLayout = useCallback((event: LayoutChangeEvent) => {
     const height = event.nativeEvent.layout.height;
     viewportHeightRef.current = height;
     setViewportHeight(prev => (prev === height ? prev : height));
   }, []);
+
+  const commitCollapsedScroll = useCallback(
+    (distance: number) => {
+      if (distance <= 0 || initialCollapseDoneRef.current) {
+        return;
+      }
+      initialCollapseDoneRef.current = true;
+      scrollY.value = distance;
+      initialCollapsePending.value = 0;
+      runOnUI(() => {
+        'worklet';
+        scrollTo(scrollRef, 0, distance, false);
+      })();
+    },
+    [initialCollapsePending, scrollRef, scrollY],
+  );
 
   const handleContentSizeChange = useCallback(
     (_width: number, height: number) => {
@@ -173,38 +247,35 @@ export const DrugsCreateCalendarTab = ({
       );
 
       if (
-        !initialCollapseDoneRef.current &&
         collapseDistance > 0 &&
         viewportHeightRef.current > 0 &&
         height >= collapseDistance + viewportHeightRef.current
       ) {
-        initialCollapseDoneRef.current = true;
-        scrollY.value = collapseDistance;
-        runOnUI(() => {
-          'worklet';
-          scrollTo(scrollRef, 0, collapseDistance, false);
-        })();
+        commitCollapsedScroll(collapseDistance);
       }
     },
-    [collapseDistance, scrollRef, scrollY],
+    [collapseDistance, commitCollapsedScroll],
   );
 
   const dynamicBottomPadding = useMemo(() => {
     if (viewportHeight <= 0) {
-      return SCROLL_BOTTOM_PADDING;
+      return Math.max(SCROLL_BOTTOM_PADDING, collapseDistance);
     }
     const minRequired =
       collapseDistance + viewportHeight - naturalContentHeight;
     return Math.max(SCROLL_BOTTOM_PADDING, minRequired);
-  }, [viewportHeight, naturalContentHeight, collapseDistance]);
+  }, [collapseDistance, viewportHeight, naturalContentHeight]);
 
   appliedBottomPaddingRef.current = dynamicBottomPadding;
 
   const collapseProgress = useDerivedValue<number>(() => {
+    if (initialCollapsePending.value === 1) {
+      return 1;
+    }
     const distance =
       expandedCalendarHeight.value - collapsedCalendarHeight.value;
     if (distance <= 0) {
-      return 0;
+      return 1;
     }
     return interpolate(
       scrollY.value,
@@ -231,28 +302,38 @@ export const DrugsCreateCalendarTab = ({
   );
 
   const scrollHandler = useAnimatedScrollHandler({
-    onScroll: e => {
-      scrollY.value = e.contentOffset.y;
-    },
-    onEndDrag: e => {
-      if (Math.abs(e.velocity?.y ?? 0) >= SNAP_VELOCITY_THRESHOLD) {
+    onScroll: event => {
+      const y = event.contentOffset.y;
+      const distance =
+        expandedCalendarHeight.value - collapsedCalendarHeight.value;
+
+      if (initialCollapsePending.value === 1) {
+        if (distance > 0 && y >= distance - SNAP_TOLERANCE) {
+          initialCollapsePending.value = 0;
+          scrollY.value = y;
+        }
         return;
       }
-      snapCalendar(e.contentOffset.y);
+
+      scrollY.value = y;
     },
-    onMomentumEnd: e => {
-      snapCalendar(e.contentOffset.y);
+    onEndDrag: event => {
+      if (initialCollapsePending.value === 1) {
+        return;
+      }
+      if (Math.abs(event.velocity?.y ?? 0) >= SNAP_VELOCITY_THRESHOLD) {
+        return;
+      }
+      snapCalendar(Math.max(0, event.contentOffset.y));
+    },
+    onMomentumEnd: event => {
+      if (initialCollapsePending.value === 1) {
+        return;
+      }
+      snapCalendar(Math.max(0, event.contentOffset.y));
     },
   });
 
-  const spacerAnimatedStyle = useAnimatedStyle(() => ({
-    height:
-      expandedCalendarHeight.value + CALENDAR_BOTTOM_GAP + CALENDAR_TOP_MARGIN,
-  }));
-
-  // Start the list already scrolled to the collapsed position so the content
-  // below the calendar appears at its final place on the first frame instead of
-  // jumping up from the expanded layout.
   const initialContentOffset = useMemo(
     () => ({x: 0, y: collapseDistance > 0 ? collapseDistance : 0}),
     [collapseDistance],
@@ -287,8 +368,6 @@ export const DrugsCreateCalendarTab = ({
     [data?.days],
   );
 
-  // The whole course data is loaded at once, so the list for the selected range
-  // is filtered on the client instead of issuing another request.
   const visibleGroups = useMemo(() => {
     const groups = mapCalendarToCardGroups(data?.days);
     const selected = [startDate, endDate].filter(
@@ -310,7 +389,6 @@ export const DrugsCreateCalendarTab = ({
   }, [data?.days, startDate, endDate]);
 
   const listData = !isLoading && !isError ? visibleGroups : EMPTY_GROUPS;
-
   const isEmptyState = !isLoading && !isError && listData.length === 0;
 
   const statusModalRef = useRef<BottomSheetModal>(null);
@@ -322,13 +400,11 @@ export const DrugsCreateCalendarTab = ({
       intakeId: item.id,
       prescriptionId: item.prescriptionId,
       status: item.status,
+      scheduledTime: item.scheduledTime,
     });
     statusModalRef.current?.present();
   }, []);
 
-  // The deep link from a push lands here with an intake id. Once the calendar
-  // data is loaded, find that intake across the whole course (not just the
-  // currently selected range) and open the status modal for it exactly once.
   const autoOpenHandledRef = useRef(false);
 
   useEffect(() => {
@@ -348,10 +424,42 @@ export const DrugsCreateCalendarTab = ({
         intakeId: targetItem.id,
         prescriptionId: targetItem.prescriptionId,
         status: targetItem.status,
+        scheduledTime: targetItem.scheduledTime,
       });
       statusModalRef.current?.present();
     }
   }, [openIntakeId, isLoading, data, onOpenIntakeHandled]);
+
+  useEffect(() => {
+    expandedCalendarHeight.value = initialCalendarHeights.expanded;
+    collapsedCalendarHeight.value = initialCalendarHeights.collapsed;
+  }, [
+    collapsedCalendarHeight,
+    expandedCalendarHeight,
+    initialCalendarHeights.collapsed,
+    initialCalendarHeights.expanded,
+  ]);
+
+  useEffect(() => {
+    if (
+      collapseDistance <= 0 ||
+      viewportHeight <= 0 ||
+      initialCollapseDoneRef.current
+    ) {
+      return;
+    }
+
+    const totalContentHeight = naturalContentHeight + dynamicBottomPadding;
+    if (totalContentHeight >= collapseDistance + viewportHeight) {
+      commitCollapsedScroll(collapseDistance);
+    }
+  }, [
+    collapseDistance,
+    commitCollapsedScroll,
+    dynamicBottomPadding,
+    naturalContentHeight,
+    viewportHeight,
+  ]);
 
   const keyExtractor = useCallback(
     (group: CalendarCardGroup) =>
@@ -370,34 +478,32 @@ export const DrugsCreateCalendarTab = ({
     [handleCardPress],
   );
 
-  const listHeader = (
-    <>
-      <Animated.View style={spacerAnimatedStyle} />
-      <CalendarSelectedDatesLabel startDate={startDate} endDate={endDate} />
-      {isEmptyState ? (
-        <View style={styles.emptyContainer}>
-          <IconMapper
-            icon="calendar-search"
-            size={64}
-            color="rgba(199, 198, 217, 1)"
-            weight={1}
-          />
-          <Text style={styles.emptyTitle}>{t('emptyState.title')}</Text>
-          <Text style={styles.emptySubtitle}>{t('emptyState.subtitle')}</Text>
-        </View>
-      ) : null}
-      {isLoading ? (
-        <View>
-          {SKELETON_CARD_GROUPS.map(slot => (
-            <SkeletonCards key={slot} />
-          ))}
-        </View>
-      ) : null}
-      {!isLoading && isError ? (
-        <Text style={styles.errorText}>{t('loadError')}</Text>
-      ) : null}
-    </>
+  const listHeaderElement = useMemo(
+    () => (
+      <IntakesListHeader
+        expandedCalendarHeight={expandedCalendarHeight}
+        startDate={startDate}
+        endDate={endDate}
+        isEmptyState={isEmptyState}
+        isLoading={isLoading}
+        isError={isError}
+        emptyTitle={t('emptyState.title')}
+        emptySubtitle={t('emptyState.subtitle')}
+        loadError={t('loadError')}
+      />
+    ),
+    [
+      endDate,
+      expandedCalendarHeight,
+      isEmptyState,
+      isError,
+      isLoading,
+      startDate,
+      t,
+    ],
   );
+
+  const renderListHeader = useCallback(() => listHeaderElement, [listHeaderElement]);
 
   return (
     <View style={styles.container}>
@@ -405,19 +511,23 @@ export const DrugsCreateCalendarTab = ({
         ref={scrollRef}
         style={styles.scroll}
         contentContainerStyle={{
-          paddingBottom: dynamicBottomPadding + insets.bottom,
+          flexGrow: 1,
+          paddingBottom: dynamicBottomPadding,
         }}
         data={listData}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
-        ListHeaderComponent={listHeader}
-        extraData={isEmptyState}
+        ListHeaderComponent={renderListHeader}
+        extraData={`${isEmptyState}-${isLoading}-${isError}-${listData.length}`}
         contentOffset={initialContentOffset}
         onLayout={handleScrollLayout}
         onContentSizeChange={handleContentSizeChange}
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        bounces
+        alwaysBounceVertical
+        overScrollMode="never"
       />
 
       <View pointerEvents="box-none" style={styles.calendarOverlay}>
@@ -436,6 +546,7 @@ export const DrugsCreateCalendarTab = ({
           initialMonth={anchorMonth}
           initialYear={anchorYear}
           collapseFocusDate={collapseFocusDate}
+          defaultCollapsed
           style={styles.calendar}
         />
       </View>

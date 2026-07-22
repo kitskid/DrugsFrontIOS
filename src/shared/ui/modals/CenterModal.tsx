@@ -1,5 +1,8 @@
 import {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState, type ReactNode} from 'react';
 import {
+  BackHandler,
+  Keyboard,
+  Platform,
   StyleSheet,
   useWindowDimensions,
   View,
@@ -35,6 +38,7 @@ export const CenterModal = forwardRef<BottomSheetModal, CenterModalProps>(
   ({children, contentContainerStyle, onDismiss, onChange, ...props}, ref) => {
     const sheetRef = useRef<BottomSheetModal>(null);
     const isPresentedRef = useRef(false);
+    const backHandlerSubscriptionRef = useRef<{remove: () => void} | null>(null);
     const {height: screenHeight} = useWindowDimensions();
     const [bottomInset, setBottomInset] = useState(() =>
       Math.max(0, (screenHeight - ESTIMATED_CONTENT_HEIGHT) / 2),
@@ -71,6 +75,44 @@ export const CenterModal = forwardRef<BottomSheetModal, CenterModalProps>(
       });
     }, [bottomInset]);
 
+    useEffect(() => {
+      return () => {
+        backHandlerSubscriptionRef.current?.remove();
+        backHandlerSubscriptionRef.current = null;
+      };
+    }, []);
+
+    const syncAndroidBackHandler = (isPresented: boolean) => {
+      if (Platform.OS !== 'android') {
+        return;
+      }
+
+      if (isPresented && !backHandlerSubscriptionRef.current) {
+        backHandlerSubscriptionRef.current = BackHandler.addEventListener(
+          'hardwareBackPress',
+          () => {
+            if (!isPresentedRef.current) {
+              return false;
+            }
+
+            if (Keyboard.isVisible()) {
+              Keyboard.dismiss();
+              return true;
+            }
+
+            sheetRef.current?.dismiss();
+            return true;
+          },
+        );
+        return;
+      }
+
+      if (!isPresented && backHandlerSubscriptionRef.current) {
+        backHandlerSubscriptionRef.current.remove();
+        backHandlerSubscriptionRef.current = null;
+      }
+    };
+
     return (
       <>
         <View pointerEvents="none" style={styles.measurer}>
@@ -90,11 +132,13 @@ export const CenterModal = forwardRef<BottomSheetModal, CenterModalProps>(
           backdropComponent={backdropComponent}
           backgroundStyle={styles.background}
           onDismiss={onDismiss}
+          {...props}
           onChange={(...args) => {
-            isPresentedRef.current = args[0] >= 0;
+            const isPresented = args[0] >= 0;
+            isPresentedRef.current = isPresented;
+            syncAndroidBackHandler(isPresented);
             onChange?.(...args);
-          }}
-          {...props}>
+          }}>
           <BottomSheetView style={contentContainerStyle}>{children}</BottomSheetView>
         </BottomSheetModal>
       </>

@@ -15,6 +15,7 @@ export type CalendarCardGroupItem = {
   medicationName: string;
   notes: string | null;
   intakeTimes: readonly string[];
+  scheduledTime: string;
   status: CalendarEventStatus;
   backgroundImage: CalendarCardBackgroundImage;
 };
@@ -78,12 +79,11 @@ export const CALENDAR_YEAR_MIN = 1980;
 export const CALENDAR_YEAR_MAX = 2080;
 
 export const getHomeCalendarRange = (): {from: string; to: string} => {
-  const fromDate = new Date();
   const toDate = new Date();
   toDate.setDate(toDate.getDate() + 6);
 
   return {
-    from: localDateToIsoString(fromDate),
+    from: new Date().toISOString(),
     to: localDateToIsoString(toDate),
   };
 };
@@ -202,6 +202,7 @@ export const mapCalendarToCardGroups = (
         medicationName: resolveMedicationName(event),
         notes: resolveNotes(event),
         intakeTimes: [formatIntakeTime(event.scheduledTime)],
+        scheduledTime: event.scheduledTime,
         status: event.status,
         backgroundImage: resolveBackgroundImage(event),
       };

@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useRef} from 'react';
+import {useCallback, useMemo, type RefObject} from 'react';
 import {
   Image,
   LayoutChangeEvent,
@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import type {SharedValue} from 'react-native-reanimated';
 import {useNavigation} from '@react-navigation/native';
 import type {CompositeNavigationProp} from '@react-navigation/native';
 import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
@@ -69,6 +70,10 @@ export type HomeListHeaderProps = {
   storageUsage?: StorageUsageSummaryDto;
   foldersCount?: number;
   isStorageCardLoading?: boolean;
+  eventsCalendarCardRef?: RefObject<View | null>;
+  onEventsCalendarLayout?: () => void;
+  calendarPullTouchSuppressed?: SharedValue<boolean>;
+  calendarScrollAtTop?: SharedValue<boolean>;
 };
 
 type HomeListHeaderNavigationProp = CompositeNavigationProp<
@@ -83,6 +88,10 @@ export const HomeListHeader = ({
   storageUsage,
   foldersCount,
   isStorageCardLoading,
+  eventsCalendarCardRef,
+  onEventsCalendarLayout,
+  calendarPullTouchSuppressed,
+  calendarScrollAtTop,
 }: HomeListHeaderProps) => {
   const topPadding = topInset + HEADER_CONTENT_TOP_GAP;
   const {width: screenWidth} = useWindowDimensions();
@@ -104,34 +113,13 @@ export const HomeListHeader = ({
     [calendarDays],
   );
 
-  const todayReminderSnapshotKeysRef = useRef<Set<string> | null>(null);
-
   const todayReminders = useMemo(() => {
     if (!calendarDays) {
       return [];
     }
 
     const todayEvents = getTodayCalendarEvents(calendarDays);
-    const allReminders = mapCalendarEventsToNotificationReminders(todayEvents);
-
-    if (todayReminderSnapshotKeysRef.current === null) {
-      const initialReminders = mapCalendarEventsToNotificationReminders(
-        todayEvents,
-        Date.now() - 30 * 60 * 1000,
-      );
-      todayReminderSnapshotKeysRef.current = new Set(
-        initialReminders.map(reminder => reminder.snapshotKey),
-      );
-      return initialReminders;
-    }
-
-    allReminders.forEach(reminder => {
-      todayReminderSnapshotKeysRef.current?.add(reminder.snapshotKey);
-    });
-
-    return allReminders.filter(reminder =>
-      todayReminderSnapshotKeysRef.current?.has(reminder.snapshotKey),
-    );
+    return mapCalendarEventsToNotificationReminders(todayEvents);
   }, [calendarDays]);
 
   const handleCalendarPress = useCallback(() => {
@@ -179,6 +167,10 @@ export const HomeListHeader = ({
           <EventsCalendar
             mappedEvents={mappedEvents}
             onCalendarPress={handleCalendarPress}
+            cardRef={eventsCalendarCardRef}
+            onCardLayout={onEventsCalendarLayout}
+            pullTouchSuppressed={calendarPullTouchSuppressed}
+            calendarScrollAtTop={calendarScrollAtTop}
           />
           <HomeStorageCard
             storageUsage={storageUsage}

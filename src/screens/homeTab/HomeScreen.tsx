@@ -3,12 +3,11 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {
   LayoutChangeEvent,
   ListRenderItem,
-  Platform,
   StatusBar,
   StyleSheet,
   View,
 } from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {useSharedValue} from 'react-native-reanimated';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {CompositeNavigationProp} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
@@ -58,6 +57,7 @@ import {
   pullIndicatorOverlayStyle,
   usePullIndicatorOverlayStyle,
   usePullToRefresh,
+  type PullExclusionZone,
 } from '../../shared/ui/refreshIndicator/usePullToRefresh.ts';
 import {PullToRefreshIndicator} from '../../shared/ui/refreshIndicator/PullToRefreshIndicator.tsx';
 import {
@@ -80,6 +80,31 @@ export const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const [measuredHeaderHeight, setMeasuredHeaderHeight] = useState(0);
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+  const calendarPullExclusionZone = useSharedValue<PullExclusionZone | null>(null);
+  const calendarPullTouchSuppressed = useSharedValue(false);
+  const calendarScrollAtTop = useSharedValue(true);
+  const eventsCalendarCardRef = useRef<View>(null);
+  const lastExclusionZoneSyncAtRef = useRef(0);
+
+  const syncCalendarPullExclusionZone = useCallback((force = false) => {
+    if (!force) {
+      const now = Date.now();
+      if (now - lastExclusionZoneSyncAtRef.current < 32) {
+        return;
+      }
+      lastExclusionZoneSyncAtRef.current = now;
+    }
+
+    eventsCalendarCardRef.current?.measureInWindow((x, y, width, height) => {
+      calendarPullExclusionZone.value = {
+        top: y,
+        bottom: y + height,
+        left: x,
+        right: x + width,
+      };
+    });
+  }, [calendarPullExclusionZone]);
+
   useDocumentsQueriesOnFocus();
 
   const {data: calendarData, isLoading: isCalendarLoading} = useQuery({
@@ -150,6 +175,7 @@ export const HomeScreen = () => {
       intakeId: item.id,
       prescriptionId: item.prescriptionId,
       status: item.status,
+      scheduledTime: item.scheduledTime,
     });
     statusModalRef.current?.present();
   }, []);
@@ -192,11 +218,16 @@ export const HomeScreen = () => {
     ],
   );
 
-  const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    setMeasuredHeaderHeight(event.nativeEvent.layout.height);
-  }, []);
+  const onHeaderLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      setMeasuredHeaderHeight(event.nativeEvent.layout.height);
+      syncCalendarPullExclusionZone();
+    },
+    [syncCalendarPullExclusionZone],
+  );
 
   const handlePullRefresh = useCallback(() => {
+    calendarPullTouchSuppressed.value = false;
     setIsPullRefreshing(true);
 
     void Promise.all([
@@ -211,9 +242,15 @@ export const HomeScreen = () => {
         queryKey: NOTIFICATIONS_UNREAD_COUNT_QUERY_KEY,
       }),
     ]).finally(() => {
+      calendarPullTouchSuppressed.value = false;
+      calendarScrollAtTop.value = true;
       setIsPullRefreshing(false);
     });
-  }, [queryClient]);
+  }, [
+    calendarPullTouchSuppressed,
+    calendarScrollAtTop,
+    queryClient,
+  ]);
 
   const {
     scrollHandler,
@@ -221,7 +258,14 @@ export const HomeScreen = () => {
     pullProgress,
     isIosPullEnabled,
     listGesture,
-  } = usePullToRefresh({onRefresh: handlePullRefresh, isRefreshing: isPullRefreshing});
+  } = usePullToRefresh({
+    onRefresh: handlePullRefresh,
+    isRefreshing: isPullRefreshing,
+    pullExclusionZone: calendarPullExclusionZone,
+    pullTouchSuppressed: calendarPullTouchSuppressed,
+    calendarScrollAtTop,
+    onPullExclusionZoneSync: syncCalendarPullExclusionZone,
+  });
 
   const pullIndicatorOverlayAnimatedStyle = usePullIndicatorOverlayStyle(
     insets.top,
@@ -248,15 +292,23 @@ export const HomeScreen = () => {
         storageUsage={storageUsageSummary}
         foldersCount={foldersCount}
         isStorageCardLoading={isStorageCardLoading}
+        eventsCalendarCardRef={eventsCalendarCardRef}
+        onEventsCalendarLayout={syncCalendarPullExclusionZone}
+        calendarPullTouchSuppressed={calendarPullTouchSuppressed}
+        calendarScrollAtTop={calendarScrollAtTop}
       />
     ),
     [
       calendarData?.days,
+      calendarPullTouchSuppressed,
+      calendarScrollAtTop,
+      eventsCalendarCardRef,
       foldersCount,
       insets.top,
       isStorageCardLoading,
       onHeaderLayout,
       storageUsageSummary,
+      syncCalendarPullExclusionZone,
     ],
   );
 
@@ -272,7 +324,7 @@ export const HomeScreen = () => {
       showsVerticalScrollIndicator={false}
       bounces={isIosPullEnabled}
       alwaysBounceVertical={isIosPullEnabled}
-      overScrollMode="never"
+      overScrollMode="always"
       onScroll={scrollHandler}
       scrollEventThrottle={16}
     />

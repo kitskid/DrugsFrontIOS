@@ -21,5 +21,13 @@
     "justNow": "только что",
     "inMinutes": "через {{count}} мин.",
     "minutesAgo": "{{count}} мин. назад"
+  },
+  "alarmScreen": {
+    "takeMedication": "Примите лекарство",
+    "defaultMedicationName": "Лекарство",
+    "actions": {
+      "skip": "Пропустить",
+      "accept": "Принято"
+    }
   }
 }

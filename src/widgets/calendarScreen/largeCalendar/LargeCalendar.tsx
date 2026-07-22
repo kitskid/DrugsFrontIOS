@@ -1,6 +1,7 @@
-import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
 import type {LayoutChangeEvent, StyleProp, ViewStyle} from 'react-native';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import type {SharedValue} from 'react-native-reanimated';
 import Animated, {
   Extrapolation,
@@ -9,6 +10,8 @@ import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
+  withTiming,
 } from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 
@@ -57,6 +60,19 @@ const MONTH_KEYS = [
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 const COLLAPSE_THRESHOLD = 0.5;
+const COLLAPSE_SPRING_CONFIG = {damping: 20, stiffness: 220};
+const COLLAPSE_TIMING_CONFIG = {duration: 220};
+
+const snapCollapseProgress = (
+  progress: SharedValue<number>,
+  useTiming = false,
+) => {
+  'worklet';
+  const target = progress.value > COLLAPSE_THRESHOLD ? 1 : 0;
+  progress.value = useTiming
+    ? withTiming(target, COLLAPSE_TIMING_CONFIG)
+    : withSpring(target, COLLAPSE_SPRING_CONFIG);
+};
 
 type LargeCalendarProps = {
   collapseProgress?: SharedValue<number>;
@@ -78,6 +94,10 @@ type LargeCalendarProps = {
    * a range is selected.
    */
   collapseFocusDate?: Date | null;
+  /** When true, the calendar starts in collapsed week mode (e.g. embedded tabs). */
+  defaultCollapsed?: boolean;
+  /** Drag the bottom handle to expand/collapse when collapseProgress is set. */
+  enableCollapseHandleGesture?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -96,6 +116,8 @@ const LargeCalendarComponent = ({
   initialMonth,
   initialYear,
   collapseFocusDate,
+  defaultCollapsed = false,
+  enableCollapseHandleGesture = false,
   style: containerStyle,
 }: LargeCalendarProps) => {
   const {t, i18n: i18nInstance} = useTranslation('calendar', {i18n});
@@ -116,7 +138,7 @@ const LargeCalendarComponent = ({
   const [layoutWidth, setLayoutWidth] = useState<number>(initialWidth);
   const [monthOffset, setMonthOffset] = useState<number>(0);
   const [weekOffset, setWeekOffset] = useState<number>(0);
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(defaultCollapsed);
   const older = startDate;
   const newer = endDate;
 
@@ -125,6 +147,10 @@ const LargeCalendarComponent = ({
   const calendarWidth = daySize * WEEK_LENGTH;
   const expandedGridHeight = CALENDAR_ROWS * daySize;
   const collapsedGridHeight = daySize;
+  const gridExpandDistance = Math.max(1, expandedGridHeight - collapsedGridHeight);
+  const gridExpandDistanceSv = useSharedValue<number>(gridExpandDistance);
+
+  const gestureStartProgress = useSharedValue<number>(defaultCollapsed ? 1 : 0);
 
   const monthsPagerRef = useRef<LargeCalendarMonthsPagerHandle>(null);
   const weeksPagerRef = useRef<LargeCalendarLoopPagerHandle>(null);
@@ -170,6 +196,10 @@ const LargeCalendarComponent = ({
   }, []);
 
   useEffect(() => {
+    gridExpandDistanceSv.value = gridExpandDistance;
+  }, [gridExpandDistance, gridExpandDistanceSv]);
+
+  useEffect(() => {
     if (daySize <= 0 || (!expandedHeightShared && !collapsedHeightShared)) {
       return;
     }
@@ -198,8 +228,9 @@ const LargeCalendarComponent = ({
     [i18nInstance.language, t],
   );
 
-  const fallbackProgress = useSharedValue<number>(0);
+  const fallbackProgress = useSharedValue<number>(defaultCollapsed ? 1 : 0);
   const effectiveProgress = collapseProgress ?? fallbackProgress;
+  const isEmbeddedCollapsed = defaultCollapsed && collapseProgress == null;
 
   useAnimatedReaction(
     () => effectiveProgress.value > COLLAPSE_THRESHOLD,
@@ -237,6 +268,43 @@ const LargeCalendarComponent = ({
       Extrapolation.CLAMP,
     ),
   }));
+
+  const collapseHandleGesture = useMemo(() => {
+    if (!enableCollapseHandleGesture || collapseProgress == null) {
+      return null;
+    }
+
+    return Gesture.Pan()
+      .activeOffsetY([-6, 6])
+      .failOffsetX([-24, 24])
+      .onStart(() => {
+        gestureStartProgress.value = effectiveProgress.value;
+      })
+      .onUpdate(event => {
+        const distance = gridExpandDistanceSv.value;
+        if (distance <= 0) {
+          return;
+        }
+        const next =
+          gestureStartProgress.value - event.translationY / distance;
+        collapseProgress.value = Math.min(1, Math.max(0, next));
+      })
+      .onEnd(() => {
+        snapCollapseProgress(collapseProgress, true);
+      });
+  }, [
+    collapseProgress,
+    effectiveProgress,
+    enableCollapseHandleGesture,
+    gestureStartProgress,
+    gridExpandDistanceSv,
+  ]);
+
+  const bottomHandle = (
+    <View style={lcStyles.bottomHandleWrapper}>
+      <View style={lcStyles.bottomHandle} />
+    </View>
+  );
 
   const computeCollapseTargetDate = useCallback((): Date => {
     if (focusRef.current !== null) {
@@ -297,6 +365,22 @@ const LargeCalendarComponent = ({
     calendarWidth,
     computeCollapseTargetDate,
     syncMonthOffsetToTarget,
+  ]);
+
+  useLayoutEffect(() => {
+    if (!defaultCollapsed || calendarWidth <= 0) {
+      return;
+    }
+    const targetDate = computeCollapseTargetDate();
+    syncWeekOffsetToTarget(targetDate);
+    syncMonthOffsetToTarget(targetDate);
+  }, [
+    calendarWidth,
+    collapseFocusDate,
+    computeCollapseTargetDate,
+    defaultCollapsed,
+    syncMonthOffsetToTarget,
+    syncWeekOffsetToTarget,
   ]);
 
   // Called synchronously when the week pager settles on an adjacent week. The
@@ -466,42 +550,11 @@ const LargeCalendarComponent = ({
       <View style={[lcStyles.centered, {width: calendarWidth}]}>
         <LargeCalendarWeekdays labels={weekdayLabels} daySize={daySize} />
       </View>
-      <Animated.View
-        style={[
-          lcStyles.gridContainer,
-          {width: calendarWidth},
-          containerAnimatedStyle,
-        ]}>
-        <Animated.View
-          pointerEvents={isCollapsed ? 'none' : 'auto'}
-          shouldRasterizeIOS
-          renderToHardwareTextureAndroid
+      {isEmbeddedCollapsed ? (
+        <View
           style={[
-            lcStyles.absoluteFill,
-            {height: expandedGridHeight},
-            monthsAnimatedStyle,
-          ]}>
-          <LargeCalendarMonthsPager
-            key={`${anchor.getFullYear()}-${anchor.getMonth()}`}
-            ref={monthsPagerRef}
-            pageWidth={calendarWidth}
-            pageHeight={expandedGridHeight}
-            minOffset={monthMinOffset}
-            maxOffset={monthMaxOffset}
-            initialOffset={0}
-            onOffsetSettled={setMonthOffset}
-            renderMonth={renderMonth}
-          />
-        </Animated.View>
-
-        <Animated.View
-          pointerEvents={isCollapsed ? 'auto' : 'none'}
-          shouldRasterizeIOS
-          renderToHardwareTextureAndroid
-          style={[
-            lcStyles.absoluteFill,
-            {height: collapsedGridHeight},
-            weeksAnimatedStyle,
+            lcStyles.gridContainer,
+            {width: calendarWidth, height: collapsedGridHeight, overflow: 'hidden'},
           ]}>
           <LargeCalendarLoopPager
             ref={weeksPagerRef}
@@ -513,11 +566,66 @@ const LargeCalendarComponent = ({
             renderPage={renderWeekPage}
             isScrollAnimatingRef={isWeekScrollAnimatingRef}
           />
+        </View>
+      ) : (
+        <Animated.View
+          style={[
+            lcStyles.gridContainer,
+            {width: calendarWidth},
+            defaultCollapsed ? {height: collapsedGridHeight} : null,
+            containerAnimatedStyle,
+          ]}>
+          <Animated.View
+            pointerEvents={isCollapsed ? 'none' : 'auto'}
+            shouldRasterizeIOS
+            renderToHardwareTextureAndroid
+            style={[
+              lcStyles.absoluteFill,
+              {height: expandedGridHeight},
+              monthsAnimatedStyle,
+            ]}>
+            <LargeCalendarMonthsPager
+              key={`${anchor.getFullYear()}-${anchor.getMonth()}`}
+              ref={monthsPagerRef}
+              pageWidth={calendarWidth}
+              pageHeight={expandedGridHeight}
+              minOffset={monthMinOffset}
+              maxOffset={monthMaxOffset}
+              initialOffset={0}
+              onOffsetSettled={setMonthOffset}
+              renderMonth={renderMonth}
+            />
+          </Animated.View>
+
+          <Animated.View
+            pointerEvents={isCollapsed ? 'auto' : 'none'}
+            shouldRasterizeIOS
+            renderToHardwareTextureAndroid
+            style={[
+              lcStyles.absoluteFill,
+              {height: collapsedGridHeight},
+              weeksAnimatedStyle,
+            ]}>
+            <LargeCalendarLoopPager
+              ref={weeksPagerRef}
+              pageWidth={calendarWidth}
+              pageHeight={collapsedGridHeight}
+              centerOffset={weekOffset}
+              onCenterOffsetChange={setWeekOffset}
+              onCenterSlotSettled={handleWeekPagerSettled}
+              renderPage={renderWeekPage}
+              isScrollAnimatingRef={isWeekScrollAnimatingRef}
+            />
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-      <View style={lcStyles.bottomHandleWrapper}>
-        <View style={lcStyles.bottomHandle} />
-      </View>
+      )}
+      {collapseHandleGesture ? (
+        <GestureDetector gesture={collapseHandleGesture}>
+          {bottomHandle}
+        </GestureDetector>
+      ) : (
+        bottomHandle
+      )}
       <View pointerEvents="none" style={lcStyles.bottomBorder} />
     </View>
   );
@@ -554,6 +662,7 @@ const lcStyles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 8,
     alignItems: 'center',
+    paddingVertical: 8,
   },
   bottomHandle: {
     width: 32,

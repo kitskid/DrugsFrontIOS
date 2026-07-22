@@ -50,6 +50,7 @@ import PillSearchIcon from '../../../assets/icons/pill-search.svg';
 import CalendarSearchIcon from '../../../assets/icons/calendar-search.svg';
 import MealsIcon from '../../../assets/icons/meals.svg';
 import LinesPlusIcon from '../../../assets/icons/lines-plus.svg';
+import MusicIcon from '../../../assets/icons/music.svg';
 
 export type IconName =
   | 'eye'
@@ -103,7 +104,8 @@ export type IconName =
   | 'pill-search'
   | 'calendar-search'
   | 'meals'
-  | 'lines-plus';
+  | 'lines-plus'
+  | 'music';
 
 type IconMapperProps = {
   icon: IconName;
@@ -165,6 +167,7 @@ const iconMap = {
   'calendar-search': CalendarSearchIcon,
   meals: MealsIcon,
   'lines-plus': LinesPlusIcon,
+  music: MusicIcon,
 } as const;
 
 const ICONS_WITH_DEFAULT_WEIGHT: ReadonlySet<IconName> = new Set([
@@ -202,6 +205,7 @@ const ICONS_WITH_DEFAULT_WEIGHT: ReadonlySet<IconName> = new Set([
   'calendar-search',
   'meals',
   'lines-plus',
+  'music',
 ]);
 
 export const IconMapper = ({

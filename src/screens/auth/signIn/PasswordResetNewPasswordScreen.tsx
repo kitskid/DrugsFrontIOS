@@ -4,6 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import type {NativeStackNavigationProp, NativeStackScreenProps} from '@react-navigation/native-stack';
 import {useMutation} from '@tanstack/react-query';
+import {useTranslation} from 'react-i18next';
 
 import {ButtonMain} from '../../../shared/ui/ButtonMain.tsx';
 import {PasswordInputWithCards} from '../../../shared/ui/PasswordInputWithCards.tsx';
@@ -12,6 +13,7 @@ import type {SignInStackParamList} from '../../../features/navigation/auth/SignI
 import type {AuthStackParamList} from '../../../features/navigation/auth/AuthStack.tsx';
 import {useToast} from '../../../features/toasts/useToast.ts';
 import {apiAuth} from '../../../features/api/apiAuth.ts';
+import i18n from '../../../features/localisation/i18n.ts';
 
 type PasswordResetNewPasswordScreenProps = NativeStackScreenProps<
   SignInStackParamList,
@@ -19,6 +21,7 @@ type PasswordResetNewPasswordScreenProps = NativeStackScreenProps<
 >;
 
 export const PasswordResetNewPasswordScreen = ({navigation}: PasswordResetNewPasswordScreenProps) => {
+  const {t} = useTranslation('auth', {i18n});
   const insets = useSafeAreaInsets();
   const authNavigation = navigation.getParent<NativeStackNavigationProp<AuthStackParamList>>();
   const [password, setPassword] = useState<string>('');
@@ -44,7 +47,7 @@ export const PasswordResetNewPasswordScreen = ({navigation}: PasswordResetNewPas
       await passwordResetForgotResetMutation(password);
       navigation.replace('PasswordResetRepeat');
     } catch {
-      showToast({variant: 'error', text: 'Ошибка на сервере'});
+      showToast({variant: 'error', text: t('common.server_error')});
     }
   };
 
@@ -58,7 +61,7 @@ export const PasswordResetNewPasswordScreen = ({navigation}: PasswordResetNewPas
       <View style={styles.inner}>
         <Image source={require('../../../../assets/images/logo.png')} style={styles.logo} />
         <View style={[styles.content, {paddingBottom: insets.bottom}]}>
-          <Text style={styles.title}>Создайте новый пароль</Text>
+          <Text style={styles.title}>{t('password_reset.new_password_title')}</Text>
           <PasswordInputWithCards
             value={password}
             onChange={value => {
@@ -79,12 +82,12 @@ export const PasswordResetNewPasswordScreen = ({navigation}: PasswordResetNewPas
                     }
                     navigation.goBack();
                   }}
-                  title={'Вернуться'}
+                  title={t('common.back')}
                   variant={'secondary'}
                 />
               </View>
               <View style={styles.buttonWrapper}>
-                <ButtonMain onPress={handleSubmit} title={'Далее'} isLoading={isSubmitting} />
+                <ButtonMain onPress={handleSubmit} title={t('common.next')} isLoading={isSubmitting} />
               </View>
             </View>
           </View>

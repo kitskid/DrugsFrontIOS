@@ -1,11 +1,20 @@
 import {API_BASE} from '@env';
 
-import type {CalendarEventStatus} from '../apiCalendar.ts';
+import type {
+  CalendarEventStatus,
+  ManualCalendarEventStatus,
+} from '../apiCalendar.ts';
 import {apiClient} from '../client.ts';
 
 export type MedicationIntakeStatusResponseDto = {
   id: string;
   status: CalendarEventStatus;
+};
+
+export type UpdateMedicationIntakeStatusPayload = {
+  status: ManualCalendarEventStatus;
+  /** Optional for COMPLETED; server uses current time when omitted. */
+  actualTime?: string;
 };
 
 export type MedicationScheduleType =
@@ -261,11 +270,14 @@ export const apiDrugs = {
   },
   updateMedicationIntakeStatus: async (
     id: string,
-    status: CalendarEventStatus,
+    payload: UpdateMedicationIntakeStatusPayload | ManualCalendarEventStatus,
   ) => {
+    const body: UpdateMedicationIntakeStatusPayload =
+      typeof payload === 'string' ? {status: payload} : payload;
+
     return apiClient.patch<MedicationIntakeStatusResponseDto>(
       `${API_BASE}/api/medicines/medication-intakes/${id}/status`,
-      {status},
+      body,
       {requiresAuth: true},
     );
   },
