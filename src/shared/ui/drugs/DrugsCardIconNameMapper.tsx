@@ -1,4 +1,5 @@
-import {memo, StyleSheet, Text, View} from 'react-native';
+import {memo} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 
 import FolderIcon from '../../../../assets/icons/folder.svg';
 import {
