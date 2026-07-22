@@ -15,7 +15,17 @@ import {apiAuth} from "../features/api/apiAuth.ts";
 import {resetDrugsCreateState} from '../features/redux/drugsCreate/drugsCreateSlice';
 import {store} from '../features/redux/store';
 
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Reduce old-generation GC pressure: evict cache entries faster
+      // and avoid re-fetching stale-but-unchanged data on every mount.
+      // Per-query staleTime: 0 overrides this where fresh data is critical.
+      gcTime: 2 * 60 * 1000,   // 2 min instead of default 5 min
+      staleTime: 30 * 1000,    // 30 sec instead of default 0
+    },
+  },
+});
 
 const AUTH_SYNC_RETRY_MS = 3000;
 const CONNECTIVITY_TOAST_DELAY_MS = 5000;

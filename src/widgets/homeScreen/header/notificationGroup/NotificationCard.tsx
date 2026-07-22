@@ -33,9 +33,14 @@ export const NotificationCard = ({reminder, width}: NotificationCardProps) => {
     [reminder.scheduledAt, nowMs],
   );
 
+  // "Through" text shows rounded hours/minutes — it only changes when the
+  // minute boundary crosses, not every second. Keying on whole-minute bucket
+  // reduces i18n t() calls (and Intl plural-rule allocations) from 1/sec to
+  // ~1/min per card without any visible difference to the user.
   const throughText = useMemo(
     () => formatThroughUntilIntake(remainingMs, t),
-    [remainingMs, t, i18n.language],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [Math.floor(remainingMs / 60000), t, i18n.language],
   );
 
   const scheduledTimeText = useMemo(
