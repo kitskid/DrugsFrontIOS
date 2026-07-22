@@ -1,4 +1,4 @@
-import {StyleSheet, Text, View} from 'react-native';
+import {memo, StyleSheet, Text, View} from 'react-native';
 
 import FolderIcon from '../../../../assets/icons/folder.svg';
 import {
@@ -39,7 +39,7 @@ const TEXT_COLOR_BY_BACKGROUND_COLOR: Record<number, string> = {
   7: 'rgba(194, 29, 183, 1)',
 };
 
-export const DrugsCardIconNameMapper = ({
+const DrugsCardIconNameMapperBase = ({
   backgroundImage,
   medicationName,
   size = 36,
@@ -96,6 +96,8 @@ export const DrugsCardIconNameMapper = ({
 
   return drugIcon;
 };
+
+export const DrugsCardIconNameMapper = memo(DrugsCardIconNameMapperBase);
 
 const styles = StyleSheet.create({
   folderContainer: {
