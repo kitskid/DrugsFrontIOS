@@ -15,35 +15,19 @@ import {
 type NotificationCardProps = {
   reminder: NotificationReminder;
   width: number;
-  // Index used to stagger interval start times so cards never tick simultaneously.
-  // Simultaneous ticks produce one large React Fabric commit (path-clone from root
-  // for all 3 cards at once) which accumulates faster than individual commits.
-  timerIndex?: number;
 };
 
-const STAGGER_MS = 350; // spread cards 0ms / 350ms / 700ms apart within each second
-
-export const NotificationCard = ({reminder, width, timerIndex = 0}: NotificationCardProps) => {
+export const NotificationCard = ({reminder, width}: NotificationCardProps) => {
   const {t} = useTranslation('home', {i18n});
   const [nowMs, setNowMs] = useState(() => Date.now());
 
+  // Each card owns its own timer so re-renders stay isolated to that card only.
+  // A single shared timer in the parent would re-render the entire ScrollView tree every second.
+  // All 3 cards mount simultaneously → their intervals fire together → React 18 automatic
+  // batching merges all 3 setState calls into ONE Fabric commit (beneficial, not harmful).
   useEffect(() => {
-    // Delay the first tick so cards are spread across the second.
-    // After the stagger offset, a normal 1-second interval takes over.
-    const staggerDelay = timerIndex * STAGGER_MS;
-    let intervalId: ReturnType<typeof setInterval>;
-
-    const timeoutId = setTimeout(() => {
-      setNowMs(Date.now());
-      intervalId = setInterval(() => setNowMs(Date.now()), 1000);
-    }, staggerDelay);
-
-    return () => {
-      clearTimeout(timeoutId);
-      clearInterval(intervalId);
-    };
-  // timerIndex is stable (card position in list never changes at runtime)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
   }, []);
 
   const remainingMs = useMemo(
