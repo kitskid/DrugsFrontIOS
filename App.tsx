@@ -1,3 +1,4 @@
+import {memo} from 'react';
 import {StatusBar} from 'react-native';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {NavigationContainer} from '@react-navigation/native';
@@ -22,7 +23,10 @@ import {WelcomeScreen} from './src/screens/auth/WelcomeScreen.tsx';
 import {ToastsProvider} from './src/widgets/toasts/ToastsProvider';
 import './src/features/localisation/i18n';
 
-const AppNavigation = () => {
+// memo prevents parent re-renders (e.g. ToastsProvider toast show/hide)
+// from cascading into the navigation tree and recreating RNSScreen* shadow nodes.
+// AppNavigation still re-renders on its own hook changes (useAuth, useFCMTokenRegistration).
+const AppNavigation = memo(() => {
   const {isAuthReady, isAuthorized, shouldShowWelcome, connectivityIssue} = useAuth();
 
   useFCMTokenRegistration({
@@ -46,7 +50,7 @@ const AppNavigation = () => {
       )}
     </NavigationContainer>
   );
-};
+});
 
 export const App = () => {
   return (

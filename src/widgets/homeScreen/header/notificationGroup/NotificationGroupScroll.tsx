@@ -102,7 +102,7 @@ export const NotificationGroupScroll = ({reminders}: NotificationGroupScrollProp
                 marginRight: index < reminders.length - 1 ? CARD_GAP : 0,
               },
             ]}>
-            <NotificationCard reminder={reminder} width={cardWidth} />
+            <NotificationCard reminder={reminder} width={cardWidth} timerIndex={index} />
           </View>
         ))}
       </ScrollView>
